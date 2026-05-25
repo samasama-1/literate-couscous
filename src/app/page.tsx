@@ -105,18 +105,17 @@ export default async function Home() {
         }
 
         .hero-showcase {
-          position: relative;
-          min-height: 560px;
+          display: flex;
+          flex-direction: column;
           border-radius: var(--radius-xl);
           border: 1px solid var(--color-border);
-          background: linear-gradient(180deg, white 0%, var(--color-bg) 100%);
+          background: white;
           overflow: hidden;
           box-shadow: var(--shadow-lg);
         }
 
         .hero-image {
-          height: 100%;
-          min-height: 560px;
+          height: 420px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -126,7 +125,6 @@ export default async function Home() {
         .hero-image img {
           width: 100%;
           height: 100%;
-          min-height: 560px;
           object-fit: cover;
         }
 
@@ -138,16 +136,9 @@ export default async function Home() {
         }
 
         .hero-deal-card {
-          position: absolute;
-          left: clamp(1rem, 4vw, 2rem);
-          right: clamp(1rem, 4vw, 2rem);
-          bottom: clamp(1rem, 4vw, 2rem);
-          background: rgba(250, 248, 245, 0.94);
-          border: 1px solid var(--color-border);
-          border-radius: var(--radius-lg);
+          background: var(--color-bg);
+          border-top: 1px solid var(--color-border);
           padding: 1.5rem;
-          box-shadow: var(--shadow-lg);
-          backdrop-filter: blur(12px);
         }
 
         .hero-deal-row {
@@ -328,20 +319,25 @@ export default async function Home() {
 
         .progress-with-markers {
           position: relative;
-          padding: 0.45rem 0 1.35rem;
+          padding: 0 0 1.75rem;
           margin: 0.75rem 0;
         }
 
         .tier-marker {
           position: absolute;
-          top: 0.08rem;
+          top: calc(100% - 1.75rem + 0.625rem);
           transform: translateX(-50%);
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 0.3rem;
+          gap: 0.25rem;
           pointer-events: none;
           z-index: 2;
+        }
+
+        /* Prevent the Goal marker at 100% from overflowing */
+        .tier-marker:last-child {
+          transform: translateX(-85%);
         }
 
         .tier-marker-dot {
@@ -391,10 +387,12 @@ export default async function Home() {
             grid-template-columns: 1fr;
           }
 
-          .hero-showcase,
-          .hero-image,
-          .hero-image img {
-            min-height: 460px;
+          .hero-showcase {
+            height: auto;
+          }
+
+          .hero-image {
+            height: 320px;
           }
 
           .method-grid {
@@ -404,6 +402,15 @@ export default async function Home() {
           .deals-header {
             align-items: flex-start;
             flex-direction: column;
+          }
+
+          /* On small screens in deal cards, hide marker text labels to prevent overlap */
+          .deal-card .tier-marker-label {
+            display: none;
+          }
+
+          .deal-card .progress-with-markers {
+            padding-bottom: 0.75rem;
           }
         }
       `}</style>
@@ -479,11 +486,11 @@ export default async function Home() {
 
                     <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", margin: "0.75rem 0 1.25rem", fontSize: "var(--text-xs)", color: "var(--color-text-muted)", fontWeight: 600 }}>
                       <span>{featuredDeal.batch.confirmed_quantity} joined</span>
-                      <span>{featuredDeal.batch.remaining_capacity} more to milestone</span>
+                      <span style={{ color: "var(--color-primary)" }}>{featuredDeal.batch.remaining_capacity} more to next tier</span>
                     </div>
 
                     <Link href={`/group-buys/${featuredDeal.batch.batch_id}`} className="btn btn-primary" style={{ width: "100%" }}>
-                      View Featured Deal
+                      Join This Deal
                     </Link>
                   </>
                 ) : (
