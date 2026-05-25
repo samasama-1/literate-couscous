@@ -94,11 +94,11 @@ export default function Header() {
           <Link
             href="/"
             style={{
-              fontFamily: "var(--font-display)",
-              fontWeight: 500,
+              fontFamily: "var(--font-body)",
+              fontWeight: 700,
               fontSize: "1.375rem",
               color: "var(--color-text)",
-              letterSpacing: "-0.01em",
+              letterSpacing: "-0.078em",
             }}
           >
             Sama Sama
@@ -130,11 +130,7 @@ export default function Header() {
             }}
           >
             <Link href="/lookup" className="nav-link">
-              Lookup Order
-            </Link>
-            
-            <Link href="/admin" className="btn-start-group">
-              Admin Portal
+              Find Your Order
             </Link>
           </div>
 
@@ -211,7 +207,7 @@ export default function Header() {
                   fontWeight: 500,
                 }}
               >
-                Lookup Order &rarr;
+                Find Your Order &rarr;
               </Link>
             </nav>
           </div>

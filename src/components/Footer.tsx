@@ -16,6 +16,9 @@ const footerLinks = {
   Company: [
     { href: "/terms", label: "Terms of Service" },
     { href: "/privacy", label: "Privacy Policy" },
+    { href: "/refunds-and-replacements", label: "Refunds & Replacements" },
+    { href: "/collection-delivery", label: "Collection & Delivery" },
+    { href: "/referrals", label: "Referral Terms" },
   ],
 };
 

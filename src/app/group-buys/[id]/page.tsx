@@ -5,6 +5,25 @@ import CopyButton from "@/components/CopyButton";
 
 export const revalidate = 0; // Fetch fresh data on every request
 
+// TODO: Replace these presentation-only milestones with exact thresholds from a pricing_tiers table or per-batch tier configuration.
+function getTierMilestoneMarkers(targetCapacity: number, confirmedQuantity: number) {
+  const markers = [
+    { label: "T1", percent: 25, units: Math.ceil(targetCapacity * 0.25) },
+    { label: "T2", percent: 70, units: Math.ceil(targetCapacity * 0.70) },
+    { label: "Goal", percent: 100, units: targetCapacity },
+  ];
+  const nextMarker = markers.find((marker) => confirmedQuantity < marker.units);
+
+  return markers.map((marker) => ({
+    ...marker,
+    status: confirmedQuantity >= marker.units
+      ? "unlocked"
+      : nextMarker?.label === marker.label
+        ? "next"
+        : "locked",
+  }));
+}
+
 export default async function BatchDetailPage({ params }: { params: { id: string } }) {
   const { id } = await params;
   
@@ -31,6 +50,7 @@ export default async function BatchDetailPage({ params }: { params: { id: string
   }
 
   const progressPercent = Math.min(100, (batch.confirmed_quantity / batch.target_capacity) * 100);
+  const tierMarkers = getTierMilestoneMarkers(batch.target_capacity, batch.confirmed_quantity);
 
   // Dynamic Tier Threshold Calculations
   const t1Max = Math.floor(batch.target_capacity * 0.25);
@@ -191,6 +211,70 @@ export default async function BatchDetailPage({ params }: { params: { id: string
           border-right: 1px solid var(--color-border);
         }
 
+        .progress-with-markers {
+          position: relative;
+          padding: 0.45rem 0 1.35rem;
+          margin-bottom: 0.75rem;
+        }
+
+        .progress-with-markers .progress-track {
+          margin: 0;
+        }
+
+        .tier-marker {
+          position: absolute;
+          top: 0.08rem;
+          transform: translateX(-50%);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.3rem;
+          pointer-events: none;
+          z-index: 2;
+        }
+
+        .tier-marker-dot {
+          width: 0.55rem;
+          height: 0.55rem;
+          border-radius: var(--radius-full);
+          border: 2px solid var(--color-surface);
+          box-shadow: 0 0 0 1px var(--color-border);
+        }
+
+        .tier-marker-label {
+          font-family: var(--font-body);
+          font-size: 0.625rem;
+          font-weight: 700;
+          line-height: 1;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          white-space: nowrap;
+        }
+
+        .tier-marker-unlocked .tier-marker-dot {
+          background: var(--color-primary);
+        }
+
+        .tier-marker-unlocked .tier-marker-label {
+          color: var(--color-primary);
+        }
+
+        .tier-marker-next .tier-marker-dot {
+          background: var(--color-warning);
+        }
+
+        .tier-marker-next .tier-marker-label {
+          color: var(--color-warning);
+        }
+
+        .tier-marker-locked .tier-marker-dot {
+          background: white;
+        }
+
+        .tier-marker-locked .tier-marker-label {
+          color: var(--color-text-light);
+        }
+
         @media (max-width: 767px) {
           .spec-card {
             border-right: none;
@@ -274,8 +358,21 @@ export default async function BatchDetailPage({ params }: { params: { id: string
 
               {/* Progress Tracker */}
               <div style={{ marginBottom: "1.5rem" }}>
-                <div className="progress-track" style={{ height: "6px", backgroundColor: "var(--color-surface-2)", marginBottom: "0.75rem" }}>
-                  <div className="progress-fill" style={{ width: `${progressPercent}%`, backgroundColor: "var(--color-primary)" }}></div>
+                <div className="progress-with-markers" aria-label="Group-buy tier milestones">
+                  <div className="progress-track" style={{ height: "6px", backgroundColor: "var(--color-surface-2)" }}>
+                    <div className="progress-fill" style={{ width: `${progressPercent}%`, backgroundColor: "var(--color-primary)" }}></div>
+                  </div>
+                  {tierMarkers.map((marker) => (
+                    <span
+                      key={marker.label}
+                      className={`tier-marker tier-marker-${marker.status}`}
+                      style={{ left: `${marker.percent}%` }}
+                      title={`${marker.label}: ${marker.units} units`}
+                    >
+                      <span className="tier-marker-dot"></span>
+                      <span className="tier-marker-label">{marker.label}</span>
+                    </span>
+                  ))}
                 </div>
                 
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-xs)", fontFamily: "var(--font-body)", fontWeight: 500 }}>
