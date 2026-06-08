@@ -93,7 +93,7 @@ export default function HowItWorksPage() {
           </div>
 
           <div style={{ textAlign: "center", marginTop: "4rem" }}>
-            <Link href="/products" className="btn btn-primary btn-lg">
+            <Link href="/#deals" className="btn btn-primary btn-lg">
               Browse Active Batches
             </Link>
           </div>

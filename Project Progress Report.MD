@@ -52,6 +52,7 @@ No backend logic, Supabase client/admin files, order logic, payment logic, Zoho 
 ### Core User Journey
 
 - `/` — Homepage with live active collections.
+- `/how-it-works` — Process explainer. Its “Browse Active Batches” CTA currently routes back to the homepage active collections section (`/#deals`) until a dedicated products or collections index is needed.
 - `/group-buys/[id]` — Batch detail page with product specs, tier display, progress, community/referral CTAs, and joining CTA.
 - `/group-buys/[id]/join` — Checkout / reservation flow.
 - `/lookup` — Customer order lookup via order code and phone/email.

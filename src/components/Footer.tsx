@@ -10,7 +10,6 @@ const footerLinks = {
   ],
   Learn: [
     { href: "/how-it-works", label: "How It Works" },
-    { href: "/why-factory-direct", label: "Why Direct Sourcing" },
     { href: "/faq", label: "FAQ & Help" },
   ],
   Company: [

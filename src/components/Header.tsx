@@ -5,7 +5,6 @@ import Link from "next/link";
 
 const navLinks = [
   { href: "/", label: "Deals" },
-  { href: "/why-factory-direct", label: "Why Direct" },
   { href: "/how-it-works", label: "How It Works" },
   { href: "/faq", label: "FAQ" },
   { href: "/appointments", label: "Book Appointment" },

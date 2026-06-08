@@ -425,7 +425,7 @@ export default async function Home() {
                 Premium home tech, unlocked together.
               </h1>
               <p className="hero-copy">
-                Sama Sama curates factory-direct appliances for Singapore homes. Join a vetted batch with a deposit, then watch collective demand move everyone toward better pricing.
+                We bring in useful home appliances at better prices through group buys. Join with a deposit, and the price drops for everyone as more people come in.
               </p>
               <div className="hero-actions">
                 <Link href="#deals" className="btn btn-primary btn-lg">
@@ -522,7 +522,7 @@ export default async function Home() {
               Better prices, unlocked together.
             </h2>
             <p style={{ fontSize: "var(--text-md)", color: "var(--color-primary-muted)", lineHeight: 1.7 }}>
-              Pick a vetted lobang, reserve your place with a deposit, then let collective demand bring the final price down for everyone in the batch.
+              Join a batch with a deposit. As more verified buyers come in, everyone moves toward a better final price.
             </p>
           </div>
 
