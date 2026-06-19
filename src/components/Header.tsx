@@ -29,18 +29,19 @@ export default function Header() {
           position: sticky;
           top: 0;
           z-index: 100;
-          background-color: var(--color-bg);
+          background-color: rgba(250, 248, 245, 0.94);
           border-bottom: 1px solid var(--color-border);
+          backdrop-filter: blur(14px);
           transition: all var(--transition-base);
         }
         
         .nav-link {
           font-family: var(--font-body);
-          font-size: var(--text-sm);
+          font-size: var(--text-xs);
           font-weight: 500;
           color: var(--color-text-muted);
           transition: color var(--transition-fast);
-          letter-spacing: 0.03em;
+          letter-spacing: 0.02em;
         }
 
         .nav-link:hover {
@@ -51,8 +52,8 @@ export default function Header() {
           font-family: var(--font-body);
           font-size: var(--text-xs);
           font-weight: 500;
-          padding: 0.5rem 1rem;
-          border-radius: var(--radius-full);
+          padding: 0.55rem 0.875rem;
+          border-radius: var(--radius-md);
           background-color: var(--color-surface);
           border: 1px solid var(--color-border);
           color: var(--color-text);
@@ -86,7 +87,7 @@ export default function Header() {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            height: "70px",
+            height: "72px",
           }}
         >
           {/* Left: Brand Logo in editorial serif font */}
@@ -94,10 +95,10 @@ export default function Header() {
             href="/"
             style={{
               fontFamily: "var(--font-body)",
-              fontWeight: 700,
-              fontSize: "1.375rem",
+              fontWeight: 600,
+              fontSize: "1.25rem",
               color: "var(--color-text)",
-              letterSpacing: "-0.078em",
+              letterSpacing: "-0.02em",
             }}
           >
             Sama Sama
@@ -109,7 +110,7 @@ export default function Header() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "2rem",
+              gap: "2.25rem",
             }}
           >
             {navLinks.map((link) => (
@@ -128,7 +129,7 @@ export default function Header() {
               gap: "1.5rem",
             }}
           >
-            <Link href="/lookup" className="nav-link">
+            <Link href="/lookup" className="btn-start-group">
               Find Your Order
             </Link>
           </div>
@@ -178,7 +179,7 @@ export default function Header() {
               padding: "1.5rem 1.25rem",
               position: "absolute",
               width: "100%",
-              boxShadow: "var(--shadow-lg)",
+              boxShadow: "var(--shadow-md)",
             }}
           >
             <nav style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
@@ -206,7 +207,7 @@ export default function Header() {
                   fontWeight: 500,
                 }}
               >
-                Find Your Order &rarr;
+                Find Your Order
               </Link>
             </nav>
           </div>

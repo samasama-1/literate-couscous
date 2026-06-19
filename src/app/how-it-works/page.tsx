@@ -2,101 +2,217 @@ import Link from "next/link";
 
 export const metadata = {
   title: "How It Works | Sama Sama",
-  description: "Learn how the Sama Sama group buy process works. Secure your slot with a deposit, unlock better prices together, and get factory-direct deals.",
+  description: "Learn how Sama Sama organises transparent group buys for Singapore homes.",
 };
 
 const steps = [
   {
     number: "01",
-    title: "Browse the Lobangs",
-    description: "We carefully vet and select premium Chinese home appliances. When a product passes our quality checks, we open a 'batch' (group buy) for it.",
-    icon: "🔍",
+    title: "Choose a batch",
+    description: "Browse current batches and product details. We only list products we have evaluated and believe are suitable for Singapore homes.",
   },
   {
     number: "02",
-    title: "Secure Your Slot",
-    description: "Pay a small, fully-refundable deposit via PayNow to lock in your position in the batch. Your deposit signals real intent to the factory.",
-    icon: "🔒",
+    title: "Place a deposit",
+    description: "Pay a small, fully-refundable deposit to secure your slot. Your deposit shows genuine interest to the supplier.",
   },
   {
     number: "03",
-    title: "Unlock Better Prices",
-    description: "This is where the magic happens. As more people join the batch, we hit higher volume tiers with the factory, dropping the price for everyone.",
-    icon: "🔓",
+    title: "We verify demand",
+    description: "We count verified deposits and share batch progress clearly as more buyers join.",
   },
   {
     number: "04",
-    title: "Batch Closes & Final Payment",
-    description: "Once the batch hits its deadline or capacity, the final price is locked in. We'll WhatsApp you to pay the remaining balance.",
-    icon: "💰",
+    title: "Batch closes and final price is locked",
+    description: "When the batch reaches its target or deadline, we confirm the best achieved price with the supplier.",
   },
   {
     number: "05",
-    title: "Ship & Collect",
-    description: "The factory produces and ships the batch directly to Singapore. You can pick it up from our collection point or arrange for local delivery.",
-    icon: "📦",
+    title: "Pay balance",
+    description: "You receive the final price and pay the remaining balance to confirm your order.",
+  },
+  {
+    number: "06",
+    title: "Ship and collect",
+    description: "We handle production and shipping updates. Once items arrive in Singapore, you can collect or arrange local delivery.",
   },
 ];
 
 export default function HowItWorksPage() {
   return (
-    <div style={{ background: "var(--color-surface)", minHeight: "100vh", paddingBottom: "var(--space-4xl)" }}>
-      {/* Hero */}
-      <section className="section" style={{ background: "var(--color-accent)", color: "white" }}>
+    <div style={{ background: "var(--color-bg)", minHeight: "100vh" }}>
+      <style>{`
+        .how-hero {
+          background:
+            radial-gradient(circle at 50% 0%, rgba(226, 220, 208, 0.6), transparent 38%),
+            var(--color-surface);
+          border-bottom: 1px solid var(--color-border);
+          padding: clamp(4rem, 9vw, 7.5rem) 0;
+        }
+
+        .how-hero-inner {
+          max-width: 760px;
+          margin: 0 auto;
+          text-align: center;
+        }
+
+        .how-hero h1 {
+          font-size: clamp(2.35rem, 5vw, 4rem);
+          font-weight: 500;
+          letter-spacing: -0.015em;
+          margin-bottom: 1rem;
+        }
+
+        .how-hero p {
+          font-size: var(--text-md);
+          line-height: 1.75;
+          color: var(--color-primary-muted);
+        }
+
+        .steps-section {
+          padding: clamp(4.5rem, 8vw, 7rem) 0;
+        }
+
+        .steps-list {
+          max-width: 860px;
+          margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .step-row {
+          display: grid;
+          grid-template-columns: 5rem minmax(0, 1fr);
+          gap: clamp(1.5rem, 5vw, 3.5rem);
+          padding: 2.25rem 0;
+          border-bottom: 1px solid var(--color-border);
+        }
+
+        .step-row:first-child {
+          border-top: 1px solid var(--color-border);
+        }
+
+        .step-number {
+          width: 3.5rem;
+          height: 3.5rem;
+          border-radius: var(--radius-full);
+          background: var(--color-surface);
+          border: 1px solid var(--color-border);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--color-primary);
+          font-size: var(--text-sm);
+          font-weight: 600;
+          letter-spacing: 0.04em;
+        }
+
+        .step-content h2 {
+          font-size: clamp(1.25rem, 2.3vw, 1.65rem);
+          font-weight: 600;
+          letter-spacing: -0.01em;
+          margin-bottom: 0.75rem;
+        }
+
+        .step-content p {
+          max-width: 620px;
+          font-size: var(--text-base);
+          line-height: 1.75;
+        }
+
+        .deposit-note {
+          max-width: 860px;
+          margin: 3rem auto 0;
+          padding: clamp(1.75rem, 4vw, 2.5rem);
+          border-radius: var(--radius-lg);
+          border: 1px solid var(--color-border);
+          background: var(--color-surface);
+          text-align: center;
+        }
+
+        .deposit-note h2 {
+          font-size: var(--text-xl);
+          font-weight: 600;
+          margin-bottom: 0.75rem;
+        }
+
+        .deposit-note p {
+          max-width: 640px;
+          margin: 0 auto;
+          font-size: var(--text-sm);
+          line-height: 1.75;
+        }
+
+        .how-cta {
+          background: var(--color-primary);
+          color: white;
+          padding: clamp(4rem, 8vw, 6rem) 0;
+          text-align: center;
+        }
+
+        .how-cta h2 {
+          color: white;
+          font-size: clamp(1.75rem, 3vw, 2.5rem);
+          font-weight: 500;
+          margin-bottom: 1rem;
+        }
+
+        .how-cta p {
+          color: var(--color-accent-light);
+          margin: 0 auto 2rem;
+          max-width: 520px;
+        }
+
+        @media (max-width: 640px) {
+          .step-row {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding: 1.75rem 0;
+          }
+        }
+      `}</style>
+
+      <section className="how-hero">
         <div className="container-site">
-          <div style={{ maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
-            <h1 style={{ color: "white", marginBottom: "1rem", textShadow: "2px 2px 0px var(--color-primary)", WebkitTextStroke: "1px var(--color-primary)" }}>
-              How It Works
-            </h1>
-            <p style={{ fontSize: "var(--text-xl)", fontWeight: 600, color: "rgba(255,255,255,0.9)", margin: 0 }}>
-              Group buying made simple, transparent, and fair.
+          <div className="how-hero-inner">
+            <h1>How It Works</h1>
+            <p>Group buying made simple, transparent, and fair.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="steps-section">
+        <div className="container-site">
+          <div className="steps-list">
+            {steps.map((step) => (
+              <article key={step.number} className="step-row">
+                <div>
+                  <span className="step-number">{step.number}</span>
+                </div>
+                <div className="step-content">
+                  <h2>{step.title}</h2>
+                  <p>{step.description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="deposit-note">
+            <h2>Why deposits?</h2>
+            <p>
+              Deposits help us confirm real demand with suppliers, so we can negotiate the best possible price for everyone in the batch. If a batch does not reach its target, your deposit is fully refunded.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Steps */}
-      <section className="section">
+      <section className="how-cta">
         <div className="container-site">
-          <div style={{ maxWidth: "800px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "2rem" }}>
-            {steps.map((step, index) => (
-              <div key={step.number} className="card" style={{ display: "flex", gap: "2rem", padding: "2rem", alignItems: "flex-start" }}>
-                <div style={{ 
-                  flexShrink: 0, 
-                  width: "80px", 
-                  height: "80px", 
-                  borderRadius: "var(--radius-xl)", 
-                  background: "var(--color-blue)", 
-                  border: "2px solid var(--color-primary)",
-                  display: "flex", 
-                  alignItems: "center", 
-                  justifyContent: "center",
-                  fontSize: "2rem",
-                  boxShadow: "var(--shadow-bold)",
-                  transform: index % 2 === 0 ? "rotate(-3deg)" : "rotate(3deg)"
-                }}>
-                  {step.icon}
-                </div>
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem" }}>
-                    <span style={{ fontSize: "1.25rem", fontWeight: 900, color: "var(--color-accent)", opacity: 0.8 }}>
-                      {step.number}
-                    </span>
-                    <h2 style={{ fontSize: "1.5rem", margin: 0 }}>{step.title}</h2>
-                  </div>
-                  <p style={{ fontSize: "var(--text-lg)", color: "var(--color-primary-muted)" }}>
-                    {step.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ textAlign: "center", marginTop: "4rem" }}>
-            <Link href="/#deals" className="btn btn-primary btn-lg">
-              Browse Active Batches
-            </Link>
-          </div>
+          <h2>Ready to join the collective?</h2>
+          <p>Better products. Better prices. Brought in together.</p>
+          <Link href="/#deals" className="btn btn-secondary">
+            View current batches
+          </Link>
         </div>
       </section>
     </div>

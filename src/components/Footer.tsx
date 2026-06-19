@@ -4,7 +4,7 @@ import Link from "next/link";
 
 const footerLinks = {
   Shop: [
-    { href: "/", label: "Active Deals" },
+    { href: "/", label: "Active Batches" },
     { href: "/lookup", label: "Track My Order" },
     { href: "/appointments", label: "Book Collection" },
   ],
@@ -29,7 +29,7 @@ export default function Footer() {
       <style>{`
         .footer-link {
           font-family: var(--font-body);
-          font-size: var(--text-sm);
+          font-size: var(--text-xs);
           color: var(--color-primary-muted);
           text-decoration: none;
           transition: color var(--transition-fast);
@@ -41,9 +41,9 @@ export default function Footer() {
           font-family: var(--font-body);
           font-size: var(--text-sm);
           padding: 0.625rem 1rem;
-          border-radius: var(--radius-md);
+          border-radius: var(--radius-lg);
           border: 1px solid var(--color-border);
-          background-color: var(--color-surface);
+          background-color: rgba(255, 255, 255, 0.72);
           color: var(--color-text);
           outline: none;
           width: 100%;
@@ -56,7 +56,7 @@ export default function Footer() {
 
         .newsletter-btn {
           padding: 0.625rem 1rem;
-          border-radius: var(--radius-md);
+          border-radius: var(--radius-lg);
           background-color: var(--color-primary);
           color: white;
           border: none;
@@ -70,12 +70,12 @@ export default function Footer() {
         }
 
         @media (min-width: 768px) {
-          .footer-grid { grid-template-columns: 1.2fr 0.8fr 0.8fr 1.2fr !important; }
+          .footer-grid { grid-template-columns: 1.35fr 0.75fr 0.75fr 1fr !important; }
         }
       `}</style>
 
       {/* Main content */}
-      <div className="container-site" style={{ padding: "4rem 1.25rem 3rem" }}>
+      <div className="container-site" style={{ padding: "4.5rem 1.25rem 3.25rem" }}>
         <div
           className="footer-grid"
           style={{ display: "grid", gridTemplateColumns: "1fr", gap: "3rem" }}
@@ -86,7 +86,7 @@ export default function Footer() {
               <span style={{ 
                 fontFamily: "var(--font-display)",
                 fontWeight: 500, 
-                fontSize: "1.5rem", 
+                fontSize: "1.35rem", 
                 color: "var(--color-text)",
                 letterSpacing: "-0.01em",
               }}>
@@ -95,7 +95,7 @@ export default function Footer() {
             </div>
 
             <p style={{ fontSize: "var(--text-sm)", color: "var(--color-primary-muted)", lineHeight: 1.6, marginBottom: "1.5rem" }}>
-              Democratizing premium home appliances through the collective bargaining power of transparent, factory-direct group buys in Singapore.
+              Useful home appliances, sourced carefully and brought in through transparent group buys for Singapore homes.
             </p>
           </div>
 
@@ -137,7 +137,7 @@ export default function Footer() {
               Newsletter
             </p>
             <p style={{ fontSize: "var(--text-sm)", color: "var(--color-primary-muted)", marginBottom: "1rem" }}>
-              Get notified of the next curated group buy drop.
+              Get notified when new batches open.
             </p>
             <form style={{ display: "flex", gap: "0.5rem" }} onSubmit={(e) => e.preventDefault()}>
               <input type="email" placeholder="Email Address" className="newsletter-input" required />
@@ -160,7 +160,7 @@ export default function Footer() {
             © {year} Sama Sama. All rights reserved. 
           </p>
           <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-light)", margin: 0 }}>
-            Curated appliances direct from vetted manufacturers.
+            Curated appliances, not mass-marketed.
           </p>
         </div>
       </div>
