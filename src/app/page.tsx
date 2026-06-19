@@ -1,8 +1,39 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 import type { Database } from "@/types/database";
 
 export const revalidate = 0; // Fetch fresh data on every request
+
+export const metadata: Metadata = {
+  title: "Useful Home Appliances Group Buy Singapore",
+  description:
+    "SamaSama sources practical home appliances and organises transparent group buys for Singapore homes. Better quality, better prices, brought in together.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "SamaSama | Useful Home Appliances Group Buy Singapore",
+    description:
+      "Practical home appliances sourced carefully through transparent group buys for Singapore homes.",
+    url: "/",
+    images: [
+      {
+        url: "/samasama-home-banner.png",
+        width: 1536,
+        height: 1024,
+        alt: "Air fryer on a warm kitchen table with neutral home styling",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SamaSama | Home Appliance Group Buys in Singapore",
+    description:
+      "Useful home appliances, sourced carefully and brought in through transparent group buys.",
+    images: ["/samasama-home-banner.png"],
+  },
+};
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 type BatchProgress = Database["public"]["Views"]["batch_progress_view"]["Row"];

@@ -1,9 +1,20 @@
 import OrderLookupForm from "@/components/OrderLookupForm";
 import Link from "next/link";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: 'Order Status Lookup | Sama Sama',
-  description: 'Check the status of your group buy order securely.',
+export const metadata: Metadata = {
+  title: "Order Status Lookup",
+  description:
+    "Check your SamaSama group-buy order status, payment verification, and batch progress securely.",
+  alternates: {
+    canonical: "/lookup",
+  },
+  openGraph: {
+    title: "SamaSama Order Status Lookup",
+    description:
+      "Securely check your SamaSama group-buy order and batch progress in Singapore.",
+    url: "/lookup",
+  },
 };
 
 export default function LookupPage() {

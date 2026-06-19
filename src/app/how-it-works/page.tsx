@@ -1,8 +1,19 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "How It Works | Sama Sama",
-  description: "Learn how Sama Sama organises transparent group buys for Singapore homes.",
+export const metadata: Metadata = {
+  title: "How SamaSama Group Buys Work",
+  description:
+    "Learn how SamaSama group buys work in Singapore, from choosing a batch and placing a deposit to final pricing, balance payment, shipping, and collection.",
+  alternates: {
+    canonical: "/how-it-works",
+  },
+  openGraph: {
+    title: "How SamaSama Group Buys Work",
+    description:
+      "A simple, transparent group-buy process for practical home appliances in Singapore.",
+    url: "/how-it-works",
+  },
 };
 
 const steps = [

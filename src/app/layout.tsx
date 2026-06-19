@@ -5,23 +5,46 @@ import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: {
-    default: "BatchDirect SG — Premium Home Appliances, Factory-Direct Group Buys",
-    template: "%s | BatchDirect SG",
+    default: "SamaSama | Group Buys for Useful Home Appliances in Singapore",
+    template: "%s | SamaSama",
   },
   description:
-    "Join Singapore's trusted group-buy platform for premium, factory-vetted home appliances. Pay a deposit, unlock better pricing together, collect locally.",
+    "SamaSama sources practical home appliances and organises transparent group buys for Singapore homes.",
   keywords: [
+    "SamaSama",
     "group buy Singapore",
     "home appliances Singapore",
-    "factory direct Singapore",
-    "Chinese appliances Singapore",
-    "group purchase",
+    "appliance group buy Singapore",
+    "Singapore home essentials",
+    "curated appliances Singapore",
   ],
-  metadataBase: new URL("https://batchdirect.sg"),
+  metadataBase: new URL("https://www.samasama.sg"),
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
     locale: "en_SG",
-    siteName: "BatchDirect SG",
+    siteName: "SamaSama",
+    title: "SamaSama | Group Buys for Useful Home Appliances in Singapore",
+    description:
+      "Useful home appliances, sourced carefully and brought in through transparent group buys for Singapore homes.",
+    url: "/",
+    images: [
+      {
+        url: "/samasama-home-banner.png",
+        width: 1536,
+        height: 1024,
+        alt: "Air fryer on a warm kitchen table with neutral home styling",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SamaSama | Group Buys for Useful Home Appliances in Singapore",
+    description:
+      "Practical home appliances sourced carefully through transparent group buys for Singapore homes.",
+    images: ["/samasama-home-banner.png"],
   },
 };
 

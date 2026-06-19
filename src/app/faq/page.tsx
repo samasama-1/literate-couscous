@@ -1,6 +1,18 @@
-export const metadata = {
-  title: "FAQ | Sama Sama",
-  description: "Frequently asked questions about Sama Sama group buys, warranties, and factory-direct pricing.",
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "FAQ for Home Appliance Group Buys",
+  description:
+    "Frequently asked questions about SamaSama group buys in Singapore, including deposits, refunds, warranties, delivery timelines, and appliance compatibility.",
+  alternates: {
+    canonical: "/faq",
+  },
+  openGraph: {
+    title: "SamaSama FAQ",
+    description:
+      "Answers about SamaSama group buys, deposits, warranties, and Singapore delivery.",
+    url: "/faq",
+  },
 };
 
 const faqs = [

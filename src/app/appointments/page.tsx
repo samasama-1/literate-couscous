@@ -1,8 +1,19 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: 'Book an Appointment | Sama Sama',
-  description: 'Schedule a warehouse viewing or collection appointment with the Sama Sama team.',
+export const metadata: Metadata = {
+  title: "Book an Appointment",
+  description:
+    "Book a SamaSama appointment in Singapore for appliance viewing, collection, or group-buy support.",
+  alternates: {
+    canonical: "/appointments",
+  },
+  openGraph: {
+    title: "Book a SamaSama Appointment",
+    description:
+      "Schedule a viewing, collection, or support appointment for SamaSama home appliance group buys in Singapore.",
+    url: "/appointments",
+  },
 };
 
 // TODO: Replace this with your actual SetMore booking page URL

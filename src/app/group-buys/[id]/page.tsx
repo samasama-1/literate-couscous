@@ -1,9 +1,84 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 import CopyButton from "@/components/CopyButton";
 
 export const revalidate = 0; // Fetch fresh data on every request
+
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+
+  const { data: batch } = await supabase
+    .from("batch_progress_view")
+    .select("*")
+    .eq("batch_id", id)
+    .single();
+
+  if (!batch) {
+    return {
+      title: "Group Buy Batch",
+      description: "View SamaSama group-buy batch details for Singapore homes.",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const { data: product } = await supabase
+    .from("products")
+    .select("*")
+    .eq("id", batch.product_id)
+    .single();
+
+  if (!product) {
+    return {
+      title: "Group Buy Batch",
+      description: "View SamaSama group-buy batch details for Singapore homes.",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const title = `${product.name} Group Buy`;
+  const description =
+    product.description ||
+    `Join the SamaSama group buy for ${product.name}, sourced for Singapore homes with transparent batch pricing.`;
+  const image = product.image_url || "/samasama-home-banner.png";
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/group-buys/${id}`,
+    },
+    openGraph: {
+      title: `${product.name} | SamaSama Group Buy`,
+      description,
+      url: `/group-buys/${id}`,
+      type: "website",
+      images: [
+        {
+          url: image,
+          alt: `${product.name} available through a SamaSama group buy in Singapore`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.name} | SamaSama Group Buy`,
+      description,
+      images: [image],
+    },
+  };
+}
 
 // TODO: Replace these presentation-only milestones with exact thresholds from a pricing_tiers table or per-batch tier configuration.
 function getTierMilestoneMarkers(targetCapacity: number, confirmedQuantity: number) {
@@ -24,7 +99,7 @@ function getTierMilestoneMarkers(targetCapacity: number, confirmedQuantity: numb
   }));
 }
 
-export default async function BatchDetailPage({ params }: { params: { id: string } }) {
+export default async function BatchDetailPage({ params }: PageProps) {
   const { id } = await params;
   
   // Fetch batch details from our view
@@ -316,7 +391,7 @@ export default async function BatchDetailPage({ params }: { params: { id: string
                 // eslint-disable-next-line @next/next/no-img-element
                 <img 
                   src={product.image_url} 
-                  alt={product.name} 
+                  alt={`${product.name} available through a SamaSama group buy in Singapore`} 
                   style={{ width: "100%", height: "100%", objectFit: "cover" }} 
                 />
               ) : (
