@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
+import { STANDARD_PAGE_PATH, STANDARD_PILLARS } from "@/lib/samasamaStandard";
 import type { Database } from "@/types/database";
 
 export const revalidate = 0; // Fetch fresh data on every request
@@ -246,6 +247,82 @@ export default async function Home() {
           font-size: var(--text-sm);
           color: var(--color-primary-muted);
           line-height: 1.7;
+        }
+
+        .standard-preview-section {
+          background: var(--color-surface);
+          padding: clamp(4.5rem, 8vw, 7rem) 0;
+          border-top: 1px solid var(--color-border);
+          border-bottom: 1px solid var(--color-border);
+        }
+
+        .standard-preview-layout {
+          display: grid;
+          grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+          gap: clamp(2.5rem, 7vw, 5rem);
+          align-items: start;
+        }
+
+        .standard-preview-title {
+          font-family: var(--font-display);
+          font-size: clamp(2rem, 4vw, 3rem);
+          font-weight: 500;
+          color: var(--color-text);
+          line-height: 1.14;
+          margin-bottom: 1rem;
+        }
+
+        .standard-preview-copy {
+          font-size: var(--text-base);
+          color: var(--color-primary-muted);
+          line-height: 1.78;
+          margin-bottom: 2rem;
+        }
+
+        .standard-preview-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+
+        .standard-preview-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.85rem;
+        }
+
+        .standard-preview-pillar {
+          border: 1px solid var(--color-border);
+          border-radius: var(--radius-lg);
+          background: rgba(255, 255, 255, 0.72);
+          padding: 1rem;
+        }
+
+        .standard-preview-pillar span {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 2rem;
+          height: 2rem;
+          margin-bottom: 0.75rem;
+          border: 1px solid var(--color-border);
+          border-radius: var(--radius-full);
+          color: var(--color-primary);
+          font-size: 0.68rem;
+          font-weight: 700;
+          letter-spacing: 0.06em;
+        }
+
+        .standard-preview-pillar h3 {
+          font-size: var(--text-sm);
+          font-weight: 650;
+          margin-bottom: 0.4rem;
+        }
+
+        .standard-preview-pillar p {
+          font-size: var(--text-xs);
+          color: var(--color-primary-muted);
+          line-height: 1.55;
         }
 
         .deals-section {
@@ -615,6 +692,11 @@ export default async function Home() {
             grid-template-columns: 1fr;
           }
 
+          .standard-preview-layout,
+          .standard-preview-grid {
+            grid-template-columns: 1fr;
+          }
+
           .deals-header {
             align-items: flex-start;
             flex-direction: column;
@@ -742,6 +824,47 @@ export default async function Home() {
               <p>
                 As more verified orders join, the batch moves toward better pricing. We coordinate collection when the products are ready.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SAMASAMA STANDARD PREVIEW ─────────────────────────── */}
+      <section className="standard-preview-section">
+        <div className="container-site">
+          <div className="standard-preview-layout">
+            <div>
+              <span className="section-tagline">The SamaSama Standard</span>
+              <h2 className="standard-preview-title">Good products should earn your trust.</h2>
+              <p className="standard-preview-copy">
+                There are thousands of products available online. Finding the
+                ones genuinely worth using takes more work. Before we recommend a
+                product, we investigate who made it, verify important claims,
+                test it ourselves, assess how it is produced and make sure there
+                is a workable support plan.
+              </p>
+              <div className="standard-preview-actions">
+                <Link
+                  href={STANDARD_PAGE_PATH}
+                  className="btn btn-primary"
+                  data-track="homepage-standard-cta-click"
+                >
+                  Explore the SamaSama Standard
+                </Link>
+                <Link href="#deals" className="btn btn-secondary">
+                  See current batches
+                </Link>
+              </div>
+            </div>
+
+            <div className="standard-preview-grid" aria-label="Six SamaSama Standard pillars">
+              {STANDARD_PILLARS.map((pillar) => (
+                <article key={pillar.id} className="standard-preview-pillar">
+                  <span>{pillar.number}</span>
+                  <h3>{pillar.title}</h3>
+                  <p>{pillar.summary}</p>
+                </article>
+              ))}
             </div>
           </div>
         </div>

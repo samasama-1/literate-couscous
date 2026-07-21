@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "FAQ for Home Appliance Group Buys",
@@ -30,11 +31,11 @@ const faqs = [
   },
   {
     question: "Do these appliances come with a warranty?",
-    answer: "Yes! Every product we curate comes with a local Singapore warranty (typically 6 to 12 months, stated on the product page). We manage a local repair network, so you don't have to ship heavy items back to China if something goes wrong."
+    answer: "Warranty and replacement terms are stated on each product or batch page before the batch opens. We clarify who is responsible for support, what is covered, and how dead-on-arrival or replacement cases will be handled."
   },
   {
     question: "Will the plug work in Singapore?",
-    answer: "Absolutely. We only import units that are compatible with Singapore's 230V voltage. Where applicable, we specifically request UK/SG 3-pin plugs from the factory, or provide a high-quality, safety-certified adapter."
+    answer: "Electrical suitability is checked as part of our review, including voltage, frequency and plug configuration. For products that need specific Singapore approvals or marks, we handle those requirements separately and show the relevant information where applicable."
   },
   {
     question: "How long does delivery take?",
@@ -69,6 +70,20 @@ export default function FAQPage() {
                 </p>
               </div>
             ))}
+
+            <div className="card" style={{ padding: "2rem" }}>
+              <h3 style={{ marginBottom: "1rem", fontSize: "1.25rem", color: "var(--color-primary)" }}>
+                How does SamaSama decide what is worth recommending?
+              </h3>
+              <p style={{ margin: 0, color: "var(--color-primary-muted)" }}>
+                We use the SamaSama Standard to review suppliers, claims,
+                samples, Singapore requirements, production quality and
+                after-sales support.{" "}
+                <Link href="/the-samasama-standard" style={{ color: "var(--color-primary)", fontWeight: 600 }}>
+                  Read how the Standard works.
+                </Link>
+              </p>
+            </div>
           </div>
 
           <div style={{ textAlign: "center", marginTop: "4rem", padding: "3rem", background: "var(--color-surface)", borderRadius: "var(--radius-xl)", border: "2px solid var(--color-border)" }}>

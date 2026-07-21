@@ -1,0 +1,177 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
+  <title id="title">SamaSama.sg Trust-First Marketing Funnel</title>
+  <desc id="desc">A clean visual flowchart showing the SamaSama funnel from traffic and discovery to trust, verified deposits, nurture, fulfilment, advocacy, and supporting loops.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f7f6f1; }
+      .title { fill: #17211b; font: 800 40px Arial, Helvetica, sans-serif; }
+      .subtitle { fill: #4f5d54; font: 400 20px Arial, Helvetica, sans-serif; }
+      .section { fill: #17211b; font: 800 14px Arial, Helvetica, sans-serif; letter-spacing: 1.4px; }
+      .box { stroke-width: 2.25; rx: 14; ry: 14; }
+      .channel { fill: #e7f0ff; stroke: #4574b8; }
+      .trust { fill: #fff5d8; stroke: #c79221; }
+      .convert { fill: #e8f7ed; stroke: #3d8a57; }
+      .nurture { fill: #f4e9ff; stroke: #7b55a3; }
+      .loop { fill: #ffe9e0; stroke: #b96b45; }
+      .retarget { fill: #e8f6f6; stroke: #2d8383; }
+      .decision { fill: #ffffff; stroke: #17211b; stroke-width: 2.4; }
+      .heading { fill: #18241d; font: 800 19px Arial, Helvetica, sans-serif; }
+      .body { fill: #3d4b42; font: 400 14px Arial, Helvetica, sans-serif; }
+      .small { fill: #5d6b62; font: 400 13px Arial, Helvetica, sans-serif; }
+      .pill { fill: #17211b; }
+      .pill-text { fill: #ffffff; font: 800 13px Arial, Helvetica, sans-serif; letter-spacing: 1.1px; }
+      .arrow { fill: none; stroke: #46544c; stroke-width: 2.6; marker-end: url(#arrow); stroke-linecap: round; stroke-linejoin: round; }
+      .soft-arrow { fill: none; stroke: #7b877f; stroke-width: 2.2; stroke-dasharray: 7 7; marker-end: url(#arrowSoft); stroke-linecap: round; stroke-linejoin: round; }
+      .divider { stroke: #d7d1c4; stroke-width: 1.5; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#46544c"/>
+    </marker>
+    <marker id="arrowSoft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7b877f"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="128%">
+      <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#111a14" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect class="bg" width="1600" height="1040"/>
+
+  <text class="title" x="70" y="72">SamaSama.sg Trust-First Marketing Funnel</text>
+  <text class="subtitle" x="70" y="108">Discovery builds attention. Proof builds confidence. Verified deposits are the real conversion.</text>
+  <rect class="pill" x="70" y="142" width="235" height="32" rx="16"/>
+  <text class="pill-text" x="94" y="164">NORTH STAR PRINCIPLE</text>
+  <text class="subtitle" x="330" y="165">Trust is the conversion engine.</text>
+
+  <text class="section" x="70" y="235">PRIMARY CUSTOMER JOURNEY</text>
+  <line class="divider" x1="70" y1="248" x2="1530" y2="248"/>
+
+  <g filter="url(#shadow)">
+    <rect class="box channel" x="70" y="290" width="205" height="120"/>
+    <text class="heading" x="100" y="326">Traffic Sources</text>
+    <text class="body" x="100" y="354">Organic content</text>
+    <text class="body" x="100" y="377">Community groups</text>
+    <text class="body" x="100" y="400">Offline referrals</text>
+
+    <rect class="box channel" x="325" y="290" width="205" height="120"/>
+    <text class="heading" x="355" y="326">Discovery</text>
+    <text class="body" x="355" y="354">Founder journey</text>
+    <text class="body" x="355" y="377">Factory visits</text>
+    <text class="body" x="355" y="400">Sourcing stories</text>
+
+    <rect class="box channel" x="580" y="290" width="205" height="120"/>
+    <text class="heading" x="610" y="326">Interest</text>
+    <text class="body" x="610" y="354">Website visit</text>
+    <text class="body" x="610" y="377">Active batches</text>
+    <text class="body" x="610" y="400">Product pages</text>
+
+    <rect class="box trust" x="835" y="290" width="225" height="120"/>
+    <text class="heading" x="865" y="326">Trust Layer</text>
+    <text class="body" x="865" y="354">How it works</text>
+    <text class="body" x="865" y="377">FAQ and deposits</text>
+    <text class="body" x="865" y="400">Product checks</text>
+
+    <rect class="box trust" x="1110" y="290" width="225" height="120"/>
+    <text class="heading" x="1140" y="326">Proof Assets</text>
+    <text class="body" x="1140" y="354">Testing notes</text>
+    <text class="body" x="1140" y="377">Supplier context</text>
+    <text class="body" x="1140" y="400">Rejected products</text>
+
+    <path class="decision" d="M 1460 280 L 1530 350 L 1460 420 L 1390 350 Z"/>
+    <text class="heading" x="1428" y="344">Ready?</text>
+    <text class="small" x="1434" y="368">to join</text>
+  </g>
+
+  <path class="arrow" d="M 275 350 H 325"/>
+  <path class="arrow" d="M 530 350 H 580"/>
+  <path class="arrow" d="M 785 350 H 835"/>
+  <path class="arrow" d="M 1060 350 H 1110"/>
+  <path class="arrow" d="M 1335 350 H 1390"/>
+
+  <text class="section" x="70" y="500">DEPOSIT CONVERSION</text>
+  <line class="divider" x1="70" y1="513" x2="1530" y2="513"/>
+
+  <g filter="url(#shadow)">
+    <rect class="box convert" x="160" y="560" width="210" height="105"/>
+    <text class="heading" x="190" y="596">Join Batch</text>
+    <text class="body" x="190" y="624">Submit order</text>
+    <text class="body" x="190" y="647">Receive Order ID</text>
+
+    <rect class="box convert" x="435" y="560" width="210" height="105"/>
+    <text class="heading" x="465" y="596">Pay Deposit</text>
+    <text class="body" x="465" y="624">PayNow using</text>
+    <text class="body" x="465" y="647">Order ID</text>
+
+    <rect class="box convert" x="710" y="560" width="220" height="105"/>
+    <text class="heading" x="740" y="596">Admin Verify</text>
+    <text class="body" x="740" y="624">Manual payment</text>
+    <text class="body" x="740" y="647">confirmation</text>
+
+    <rect class="box convert" x="995" y="560" width="230" height="105"/>
+    <text class="heading" x="1025" y="596">Verified Deposit</text>
+    <text class="body" x="1025" y="624">Order counts toward</text>
+    <text class="body" x="1025" y="647">batch progress</text>
+  </g>
+
+  <path class="arrow" d="M 1460 420 V 470 H 265 V 560"/>
+  <text class="small" x="1472" y="455">Yes</text>
+  <path class="arrow" d="M 370 612 H 435"/>
+  <path class="arrow" d="M 645 612 H 710"/>
+  <path class="arrow" d="M 930 612 H 995"/>
+
+  <text class="section" x="70" y="740">POST-DEPOSIT EXPERIENCE</text>
+  <line class="divider" x1="70" y1="753" x2="1530" y2="753"/>
+
+  <g filter="url(#shadow)">
+    <rect class="box nurture" x="160" y="795" width="205" height="100"/>
+    <text class="heading" x="190" y="831">Nurture</text>
+    <text class="body" x="190" y="859">Progress updates</text>
+    <text class="body" x="190" y="882">Tier unlocks</text>
+
+    <rect class="box nurture" x="430" y="795" width="205" height="100"/>
+    <text class="heading" x="460" y="831">Batch Close</text>
+    <text class="body" x="460" y="859">Final price</text>
+    <text class="body" x="460" y="882">Balance details</text>
+
+    <rect class="box nurture" x="700" y="795" width="205" height="100"/>
+    <text class="heading" x="730" y="831">Fulfilment</text>
+    <text class="body" x="730" y="859">Procurement</text>
+    <text class="body" x="730" y="882">Shipping updates</text>
+
+    <rect class="box nurture" x="970" y="795" width="205" height="100"/>
+    <text class="heading" x="1000" y="831">Collection</text>
+    <text class="body" x="1000" y="859">Pickup or delivery</text>
+    <text class="body" x="1000" y="882">Local support</text>
+
+    <rect class="box loop" x="1240" y="795" width="205" height="100"/>
+    <text class="heading" x="1270" y="831">Advocacy</text>
+    <text class="body" x="1270" y="859">Reviews and UGC</text>
+    <text class="body" x="1270" y="882">Referrals</text>
+  </g>
+
+  <path class="arrow" d="M 1110 665 V 715 H 262 V 795"/>
+  <path class="arrow" d="M 365 845 H 430"/>
+  <path class="arrow" d="M 635 845 H 700"/>
+  <path class="arrow" d="M 905 845 H 970"/>
+  <path class="arrow" d="M 1175 845 H 1240"/>
+
+  <g filter="url(#shadow)">
+    <rect class="box loop" x="70" y="925" width="280" height="55"/>
+    <text class="heading" x="96" y="959">Lead Capture</text>
+    <text class="small" x="245" y="959">feeds future launches</text>
+
+    <rect class="box retarget" x="410" y="925" width="290" height="55"/>
+    <text class="heading" x="436" y="959">Retargeting</text>
+    <text class="small" x="560" y="959">brings hesitant users back</text>
+
+    <rect class="box loop" x="760" y="925" width="300" height="55"/>
+    <text class="heading" x="786" y="959">Sharing Loop</text>
+    <text class="small" x="920" y="959">helps unlock better tiers</text>
+  </g>
+
+  <text class="small" x="1275" y="334">Not yet</text>
+  <path class="soft-arrow" d="M 700 952 H 760"/>
+  <path class="soft-arrow" d="M 350 952 H 410"/>
+
+  <text class="small" x="70" y="1015">Core message: We source, check, reject the rubbish, and bring in the good stuff at group-buy prices.</text>
+</svg>

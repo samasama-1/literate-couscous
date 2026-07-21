@@ -5,6 +5,7 @@ const SITE_URL = "https://www.samasama.sg";
 
 const publicRoutes = [
   "/",
+  "/the-samasama-standard",
   "/how-it-works",
   "/faq",
   "/appointments",

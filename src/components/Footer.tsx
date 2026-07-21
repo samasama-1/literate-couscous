@@ -9,6 +9,7 @@ const footerLinks = {
     { href: "/appointments", label: "Book Collection" },
   ],
   Learn: [
+    { href: "/the-samasama-standard", label: "The SamaSama Standard" },
     { href: "/how-it-works", label: "How It Works" },
     { href: "/faq", label: "FAQ & Help" },
   ],

@@ -3,6 +3,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 import CopyButton from "@/components/CopyButton";
+import SamaSamaStandardSummary from "@/components/SamaSamaStandardSummary";
+import { getProductStandardEvaluation } from "@/lib/samasamaStandard";
 
 export const revalidate = 0; // Fetch fresh data on every request
 
@@ -147,6 +149,7 @@ export default async function BatchDetailPage({ params }: PageProps) {
   // Calculate savings percentage vs retail price if available
   const retailPrice = product.retail_price || currentPrice * 1.5;
   const savingsPercent = Math.round(((retailPrice - currentPrice) / retailPrice) * 100);
+  const standardEvaluation = getProductStandardEvaluation(product.id, product.features);
 
   return (
     <div style={{ backgroundColor: "var(--color-bg)", minHeight: "100vh", paddingBottom: "6rem" }}>
@@ -499,20 +502,25 @@ export default async function BatchDetailPage({ params }: PageProps) {
             <div style={{ marginBottom: "2rem" }}>
               <div className="trust-bullet">
                 <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                <span>2-Year Manufacturer Warranty included</span>
+                <span>Evaluated through the SamaSama Standard before recommendation</span>
               </div>
               <div className="trust-bullet">
                 <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span>Local technical service and part support</span>
+                <span>Product-specific after-sales terms shown before batch fulfilment</span>
               </div>
             </div>
 
             {/* Editorial brand philosophy quote */}
             <blockquote className="editorial-quote">
-              &ldquo;The goal of Sama Sama is to bring artisanal home tools into everyday Singaporean households through collective purchasing power. This group buy is open for a limited time.&rdquo;
+              &ldquo;We do the homework before homeowners spend their money. This batch is open for a limited time, but the evaluation work comes first.&rdquo;
             </blockquote>
           </div>
         </div>
+
+        <SamaSamaStandardSummary
+          evaluation={standardEvaluation}
+          productName={product.name}
+        />
 
         {/* SECTION 2: Transparent Pricing Tiers */}
         <div style={{ marginTop: "6rem", borderTop: "1px solid var(--color-border)", paddingTop: "4rem" }}>
@@ -611,26 +619,24 @@ export default async function BatchDetailPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Discord/Telegram card */}
+          {/* Sourcing process card */}
           <div style={{ backgroundColor: "var(--color-primary)", color: "white", borderRadius: "var(--radius-xl)", padding: "2.5rem", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
             <div>
               <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", color: "white", marginBottom: "1rem" }}>
-                Community Vetted
+                Sourced Before Listed
               </h3>
               <p style={{ fontSize: "var(--text-sm)", color: "var(--color-accent-light)", lineHeight: 1.6, marginBottom: "1.5rem" }}>
-                Over 12,000 households have joined Sama Sama groups in Singapore to save on verified high-quality home engineering.
+                SamaSama does not list every product a supplier offers. We review the product, supplier, support plan and known trade-offs before recommending a batch.
               </p>
             </div>
             
-            <a 
-              href="https://discord.gg" 
-              target="_blank" 
-              rel="noopener noreferrer" 
+            <Link
+              href="/the-samasama-standard"
               className="btn btn-secondary" 
               style={{ width: "fit-content", padding: "0.625rem 1.25rem", borderRadius: "var(--radius-md)", fontSize: "var(--text-xs)", border: "none" }}
             >
-              Join Our Discord Community →
-            </a>
+              Read the Standard
+            </Link>
           </div>
 
         </div>
@@ -646,42 +652,42 @@ export default async function BatchDetailPage({ params }: PageProps) {
         }}>
           
           <div className="spec-card">
-            <div style={{ fontSize: "1.5rem", marginBottom: "0.75rem" }}>🇸🇬</div>
+            <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, letterSpacing: "0.08em", color: "var(--color-primary)", marginBottom: "0.75rem" }}>01</div>
             <h4 style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", fontWeight: 600, marginBottom: "0.5rem" }}>
-              SG Vetted Quality
+              Sourcing Checks
             </h4>
             <p style={{ fontSize: "var(--text-xs)", color: "var(--color-primary-muted)", lineHeight: 1.5 }}>
-              Hand-vetted by our Singapore operations team for premium material and build standards.
+              We investigate the supplier and product background before deciding whether a batch belongs on SamaSama.
             </p>
           </div>
 
           <div className="spec-card">
-            <div style={{ fontSize: "1.5rem", marginBottom: "0.75rem" }}>🌱</div>
+            <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, letterSpacing: "0.08em", color: "var(--color-primary)", marginBottom: "0.75rem" }}>02</div>
             <h4 style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", fontWeight: 600, marginBottom: "0.5rem" }}>
-              Energy Efficient
+              Claim Verification
             </h4>
             <p style={{ fontSize: "var(--text-xs)", color: "var(--color-primary-muted)", lineHeight: 1.5 }}>
-              Boasts certified eco-friendly electrical components to lower monthly utilities.
+              Important claims should be supported by documents, sample use or clear notes before we present them as fact.
             </p>
           </div>
 
           <div className="spec-card">
-            <div style={{ fontSize: "1.5rem", marginBottom: "0.75rem" }}>🛡️</div>
+            <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, letterSpacing: "0.08em", color: "var(--color-primary)", marginBottom: "0.75rem" }}>03</div>
             <h4 style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", fontWeight: 600, marginBottom: "0.5rem" }}>
-              Secure Escrow
+              Deposit Clarity
             </h4>
             <p style={{ fontSize: "var(--text-xs)", color: "var(--color-primary-muted)", lineHeight: 1.5 }}>
-              Deposits held securely. If target batch milestones are not hit, you get a full refund instantly.
+              Deposits, batch progress and refund mechanics are explained before customers join a group buy.
             </p>
           </div>
 
           <div className="spec-card" style={{ borderRight: "none" }}>
-            <div style={{ fontSize: "1.5rem", marginBottom: "0.75rem" }}>🎨</div>
+            <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, letterSpacing: "0.08em", color: "var(--color-primary)", marginBottom: "0.75rem" }}>04</div>
             <h4 style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", fontWeight: 600, marginBottom: "0.5rem" }}>
-              Wabi-Sabi Aesthetics
+              Support Planning
             </h4>
             <p style={{ fontSize: "var(--text-xs)", color: "var(--color-primary-muted)", lineHeight: 1.5 }}>
-              Curated minimal coating inspired by natural textures, fitting perfectly in modern kitchens.
+              We plan the support route for faults, replacements and supplier escalation before launching.
             </p>
           </div>
 
