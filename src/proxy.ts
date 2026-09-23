@@ -2,6 +2,13 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function proxy(request: NextRequest) {
+  // Temporary homepage destination. Set COMING_SOON_MODE=false to reopen it.
+  if (request.nextUrl.pathname === '/' && process.env.COMING_SOON_MODE !== 'false') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/coming-soon';
+    return NextResponse.redirect(url, 307);
+  }
+
   // Let Next.js continue the request naturally while we just peek at the auth state
   let supabaseResponse = NextResponse.next({
     request,

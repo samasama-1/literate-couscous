@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SiteChrome from "@/components/SiteChrome";
 
 export const metadata: Metadata = {
   title: {
@@ -56,9 +57,9 @@ export default function RootLayout({
   return (
     <html lang="en-SG">
       <body>
-        <Header />
+        <SiteChrome><Header /></SiteChrome>
         <main style={{ flex: 1 }}>{children}</main>
-        <Footer />
+        <SiteChrome><Footer /></SiteChrome>
       </body>
     </html>
   );

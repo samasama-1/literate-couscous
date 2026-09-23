@@ -1,32 +1,9 @@
 'use server';
 
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { createClient } from "@/lib/supabaseServer";
+import { verifyAdminAccess } from "@/lib/adminAuth";
 import { revalidatePath } from "next/cache";
 import { updateDealStageInZoho } from './zoho';
-
-/**
- * Validates the current session against the allowed admin emails.
- * Throws an error if unauthorized.
- */
-async function verifyAdminAccess() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user || !user.email) {
-    throw new Error("Unauthorized: No active session.");
-  }
-
-  const allowedEmailsStr = process.env.ADMIN_EMAILS || '';
-  const allowedEmails = allowedEmailsStr.split(',').map(e => e.trim().toLowerCase());
-  const userEmail = user.email.trim().toLowerCase();
-
-  if (!allowedEmails.includes(userEmail)) {
-    throw new Error("Unauthorized: Email not approved for admin access.");
-  }
-
-  return true;
-}
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Unauthorized.";

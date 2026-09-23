@@ -1,0 +1,13 @@
+.page { padding: clamp(32px, 7vw, 88px) 20px; background: radial-gradient(ellipse at top right, #e5e9de, transparent 60%), var(--color-bg); }
+.card { max-width: 1000px; margin: 0 auto; padding: clamp(28px, 6vw, 76px); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 24px; }
+.eyebrow { display: inline-flex; align-items: center; gap: 10px; padding: 9px 14px; border-radius: 30px; background: #e9edde; color: #48533b; font-size: 13px; }
+.eyebrow span { width: 7px; height: 7px; background: #657348; border-radius: 50%; flex-shrink: 0; }
+.label { margin-top: 40px; text-transform: uppercase; letter-spacing: .14em; font-size: 12px; font-weight: 700; }
+.card h1 { font-size: clamp(34px, 5.5vw, 64px); line-height: 1.12; letter-spacing: -.035em; margin: 18px 0 24px; }
+.card h1 em { color: #657348; font-style: normal; }
+.intro { max-width: 650px; font-size: 18px; line-height: 1.7; }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 36px 0; padding: 24px 0; border-block: 1px solid var(--color-border); }
+.steps p { margin: 0; font-size: 14px; }
+.steps span { display: block; margin-bottom: 10px; color: #657348; font-size: 12px; font-weight: 700; }
+.note { font-size: 14px; margin-bottom: 20px; }
+@media (max-width: 580px) { .steps { grid-template-columns: 1fr; gap: 18px; } .steps span { display: inline-block; margin: 0 12px 0 0; } .intro { font-size: 16px; } }

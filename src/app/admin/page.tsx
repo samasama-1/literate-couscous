@@ -2,6 +2,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { verifyOrder } from "../actions/admin";
 import { signOut } from "../actions/auth";
 import CreateLobangForm from "@/components/CreateLobangForm";
+import Link from "next/link";
 
 export const revalidate = 0;
 
@@ -30,9 +31,14 @@ export default async function AdminDashboard() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
         <h1 style={{ margin: 0 }}>Admin Dashboard</h1>
         <form action={signOut}>
-          <button type="submit" className="btn btn-outline btn-sm">
-            Secure Logout
-          </button>
+          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
+            <Link href="/admin/campaigns" className="btn btn-secondary btn-sm">
+              Campaign Leads
+            </Link>
+            <button type="submit" className="btn btn-outline btn-sm">
+              Secure Logout
+            </button>
+          </div>
         </form>
       </div>
       
@@ -167,4 +173,3 @@ export default async function AdminDashboard() {
     </div>
   );
 }
-
