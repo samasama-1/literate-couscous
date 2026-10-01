@@ -55,7 +55,13 @@ For example: select your campaign, select Studio Air, choose **YES**, then **App
 
 An exported segment is **not automatically a marketing-permitted audience**. Before marketing, require both `marketing_consent = yes` and `unsubscribed = no`. This change does not add a broadcast-email tool, reservations or payments.
 
+## Zoho CRM
+
+See [Zoho voting sync setup](zoho-voting-sync.md) for the fourth migration, Leads authorization and enable flag. Admin lead details show CRM sync status and a manual retry button. Test campaigns never sync.
+
 ## Confirmation emails and unsubscribe
+
+Email sending now requires an explicit `CAMPAIGN_EMAIL_PROVIDER=resend` setting; leave it unset while preparing Zoho Mail. Zoho Mail sending is not implemented yet.
 
 A live registration saves first and creates a confirmation-email job in the same transaction. The app attempts delivery immediately. Missing email configuration or provider failures do not discard the pick.
 

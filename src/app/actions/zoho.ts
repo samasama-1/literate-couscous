@@ -1,5 +1,4 @@
-'use server';
-
+// Internal server-only helpers: do not expose these as callable Server Actions.
 import 'server-only';
 
 // ─── Zoho CRM Integration ───
@@ -37,6 +36,7 @@ async function getAccessToken(): Promise<string | null> {
   try {
     const res = await fetch(`${ZOHO_ACCOUNTS_URL}/oauth/v2/token`, {
       method: 'POST',
+      redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(10000),
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         grant_type: 'refresh_token',
@@ -49,10 +49,10 @@ async function getAccessToken(): Promise<string | null> {
     const data = await res.json();
     if (data.access_token) return data.access_token;
 
-    console.error('[Zoho] Failed to get access token:', data);
+    console.error('[Zoho] Operation failed.');
     return null;
-  } catch (err) {
-    console.error('[Zoho] Token request failed:', err);
+  } catch {
+    console.error('[Zoho] Operation failed.');
     return null;
   }
 }
@@ -67,7 +67,7 @@ export async function syncContactToZoho(customer: {
   email: string;
 }) {
   if (!isZohoConfigured()) {
-    console.log('[Zoho] Skipped — not configured.');
+    console.log('[Zoho] Operation completed or skipped.');
     return null;
   }
 
@@ -82,6 +82,7 @@ export async function syncContactToZoho(customer: {
   try {
     const res = await fetch(`${ZOHO_API_DOMAIN}/crm/v5/Contacts/upsert`, {
       method: 'POST',
+      redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(10000),
       headers: {
         'Authorization': `Zoho-oauthtoken ${token}`,
         'Content-Type': 'application/json',
@@ -100,14 +101,14 @@ export async function syncContactToZoho(customer: {
 
     const data = await res.json();
     if (data.data?.[0]?.status === 'success') {
-      console.log('[Zoho] Contact synced:', customer.email);
+      console.log('[Zoho] Operation completed or skipped.');
       return data.data[0].details.id;
     }
 
-    console.error('[Zoho] Contact sync failed:', JSON.stringify(data));
+    console.error('[Zoho] Operation failed.');
     return null;
-  } catch (err) {
-    console.error('[Zoho] Contact sync error:', err);
+  } catch {
+    console.error('[Zoho] Operation failed.');
     return null;
   }
 }
@@ -124,7 +125,7 @@ export async function syncOrderToZoho(order: {
   contactId?: string | null;
 }) {
   if (!isZohoConfigured()) {
-    console.log('[Zoho] Skipped — not configured.');
+    console.log('[Zoho] Operation completed or skipped.');
     return null;
   }
 
@@ -146,6 +147,7 @@ export async function syncOrderToZoho(order: {
 
     const res = await fetch(`${ZOHO_API_DOMAIN}/crm/v5/Deals`, {
       method: 'POST',
+      redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(10000),
       headers: {
         'Authorization': `Zoho-oauthtoken ${token}`,
         'Content-Type': 'application/json',
@@ -155,14 +157,14 @@ export async function syncOrderToZoho(order: {
 
     const data = await res.json();
     if (data.data?.[0]?.status === 'success') {
-      console.log('[Zoho] Deal created:', order.orderCode);
+      console.log('[Zoho] Operation completed or skipped.');
       return data.data[0].details.id;
     }
 
-    console.error('[Zoho] Deal creation failed:', JSON.stringify(data));
+    console.error('[Zoho] Operation failed.');
     return null;
-  } catch (err) {
-    console.error('[Zoho] Deal creation error:', err);
+  } catch {
+    console.error('[Zoho] Operation failed.');
     return null;
   }
 }
@@ -181,6 +183,7 @@ export async function updateDealStageInZoho(orderCode: string, newStage: string)
     const searchRes = await fetch(
       `${ZOHO_API_DOMAIN}/crm/v5/Deals/search?criteria=(Deal_Name:starts_with:${orderCode})`,
       {
+        redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(10000),
         headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
       }
     );
@@ -188,13 +191,14 @@ export async function updateDealStageInZoho(orderCode: string, newStage: string)
     const searchData = await searchRes.json();
     const dealId = searchData.data?.[0]?.id;
     if (!dealId) {
-      console.log('[Zoho] Deal not found for order:', orderCode);
+      console.log('[Zoho] Operation completed or skipped.');
       return null;
     }
 
     // Update the deal stage
     const updateRes = await fetch(`${ZOHO_API_DOMAIN}/crm/v5/Deals`, {
       method: 'PUT',
+      redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(10000),
       headers: {
         'Authorization': `Zoho-oauthtoken ${token}`,
         'Content-Type': 'application/json',
@@ -206,14 +210,14 @@ export async function updateDealStageInZoho(orderCode: string, newStage: string)
 
     const updateData = await updateRes.json();
     if (updateData.data?.[0]?.status === 'success') {
-      console.log('[Zoho] Deal stage updated to:', newStage);
+      console.log('[Zoho] Operation completed or skipped.');
       return dealId;
     }
 
-    console.error('[Zoho] Deal update failed:', JSON.stringify(updateData));
+    console.error('[Zoho] Operation failed.');
     return null;
-  } catch (err) {
-    console.error('[Zoho] Deal update error:', err);
+  } catch {
+    console.error('[Zoho] Operation failed.');
     return null;
   }
 }

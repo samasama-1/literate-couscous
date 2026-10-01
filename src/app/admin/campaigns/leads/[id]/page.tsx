@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { retryConfirmation } from "@/app/actions/campaign-admin";
+import { crmDatabase } from "@/lib/campaigns/zoho-sync";
+import { retryConfirmation, retryZohoSync } from "@/app/actions/campaign-admin";
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { verifyAdminAccess } from "@/lib/adminAuth";
@@ -48,6 +49,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
   if (!lead) notFound();
 
   const detail = lead as unknown as LeadDetail;
+  const {data:crm,error:crmError}=await crmDatabase().from('campaign_crm_sync').select('status,zoho_lead_id,last_error,synced_at').eq('contact_id',detail.contact_id).maybeSingle();
   const timeline = (events || []) as FunnelEvent[];
 
   return (
@@ -59,6 +61,17 @@ export default async function LeadDetailPage({ params }: PageProps) {
         </div>
         <span className="badge badge-neutral">{funnelStatusLabels[detail.funnel_status]}</span>
       </div>
+
+      <section className="campaign-shell" style={{marginBottom:'2rem'}}>
+        <h2>Zoho CRM sync</h2>
+        <p>{detail.campaigns?.is_test ? 'Test campaigns are never sent to Zoho.' : crmError ? 'Apply the campaign_zoho_sync.sql migration to enable the sync queue.' : `Status: ${crm?.status || 'Not queued'}`}</p>
+        <p>{process.env.ZOHO_CAMPAIGN_SYNC_ENABLED==='true' ? 'CRM sync enabled.' : 'CRM sync is off. Set ZOHO_CAMPAIGN_SYNC_ENABLED=true after authorization.'}</p>
+        {crm?.zoho_lead_id && <p>Zoho Lead ID: {crm.zoho_lead_id}</p>}
+        {crm?.last_error && <p role="status">{crm.last_error}</p>}
+        {crm?.synced_at && <p>Last synced: {new Date(crm.synced_at).toLocaleString('en-SG')}</p>}
+        {!detail.campaigns?.is_test && !crmError && <form action={retryZohoSync}><input type="hidden" name="lead_id" value={id} /><button className="btn btn-secondary">Sync / retry Zoho</button></form>}
+        <p>CRM shows the latest campaign response for this contact. Full campaign history remains in SamaSama.</p>
+      </section>
 
       <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
         <div style={{ background: "white", border: "1px solid var(--color-border)", borderRadius: "var(--radius-lg)", padding: "1.25rem" }}>

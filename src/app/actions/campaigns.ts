@@ -1,5 +1,7 @@
 'use server';
 import 'server-only';
+import { after } from 'next/server';
+import { syncCampaignContact } from '@/lib/campaigns/zoho-sync';
 import { revalidatePath } from 'next/cache';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { deliverConfirmation } from '@/lib/campaigns/email';
@@ -33,6 +35,12 @@ export async function submitCampaignIntent(value: unknown) {
     if (result.delivery_id) {
       try { emailStatus=await deliverConfirmation(result.delivery_id); } catch { emailStatus='queued'; }
     }
+    if (!result.is_test) after(async () => {
+      try {
+        const {data:lead}=await supabaseAdmin.from('campaign_leads').select('contact_id').eq('id',result.lead_id).single();
+        if(lead) await syncCampaignContact(lead.contact_id);
+      } catch { /* Durable queue remains available for admin retry. */ }
+    });
     revalidatePath('/admin/campaigns');
     revalidatePath(`/admin/campaigns/leads/${result.lead_id}`);
     return {success:true as const,productName:result.product_name,purchaseIntent:input.purchase_intent,alreadyRegistered:result.already_registered,emailStatus};

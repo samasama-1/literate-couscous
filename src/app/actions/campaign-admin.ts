@@ -54,3 +54,15 @@ export async function retryConfirmation(formData: FormData) {
   await deliverConfirmation(id);
   revalidatePath('/admin/campaigns','layout');
 }
+
+export async function retryZohoSync(formData: FormData) {
+  await verifyAdminAccess();
+  const id=uuid(formData.get('lead_id'));
+  const {data:lead}=await supabaseAdmin.from('campaign_leads').select('contact_id,campaigns(is_test)').eq('id',id).single();
+  if(!lead || lead.campaigns?.is_test) return;
+  const {crmDatabase,syncCampaignContact}=await import('@/lib/campaigns/zoho-sync');
+  const db=crmDatabase();
+  const {error}=await db.rpc('queue_campaign_crm',{p_contact_id:lead.contact_id});
+  if(!error) await syncCampaignContact(lead.contact_id);
+  revalidatePath(`/admin/campaigns/leads/${id}`);
+}

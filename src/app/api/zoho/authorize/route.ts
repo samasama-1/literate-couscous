@@ -14,7 +14,7 @@ export async function GET() {
     url.search = new URLSearchParams({
       client_id: config.clientId, redirect_uri: config.redirectUri,
       response_type: 'code', access_type: 'offline', prompt: 'consent', state,
-      scope: 'ZohoCRM.modules.contacts.CREATE,ZohoCRM.modules.contacts.UPDATE,ZohoCRM.modules.deals.CREATE,ZohoCRM.modules.deals.UPDATE',
+      scope: 'ZohoCRM.modules.leads.CREATE,ZohoCRM.modules.leads.UPDATE,ZohoCRM.modules.leads.READ,ZohoSearch.securesearch.READ,ZohoCRM.modules.contacts.CREATE,ZohoCRM.modules.contacts.UPDATE,ZohoCRM.modules.deals.CREATE,ZohoCRM.modules.deals.UPDATE',
     }).toString();
     const response = NextResponse.redirect(url);
     response.headers.set('Cache-Control', 'no-store');

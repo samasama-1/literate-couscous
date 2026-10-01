@@ -26,7 +26,7 @@ test('CSV quotes delimiters and neutralizes spreadsheet formulas',()=>{
 test('real PostgreSQL migrations and campaign workflows',async t=>{
   const db=new PGlite();
   await db.exec('CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role; CREATE TABLE products(id uuid PRIMARY KEY);');
-  for (const name of ['add_campaign_lead_system.sql','harden_campaign_lead_system.sql','campaign_content_editor.sql']) await db.exec(await readFile(new URL(`../database/sql/${name}`,import.meta.url),'utf8'));
+  for (const name of ['add_campaign_lead_system.sql','harden_campaign_lead_system.sql','campaign_content_editor.sql','campaign_zoho_sync.sql']) await db.exec(await readFile(new URL(`../database/sql/${name}`,import.meta.url),'utf8'));
   const call=async(name,p)=>(await db.query(`SELECT ${name}($1::jsonb) AS result`,[JSON.stringify(p)])).rows[0].result;
   const content={...demoCampaign,id:null,slug:'test-fixture',is_test:false,products:demoProducts.map(p=>({...p,id:null}))};
   const cid=await call('save_campaign_content',content);
@@ -43,6 +43,18 @@ test('real PostgreSQL migrations and campaign workflows',async t=>{
     assert.ok(events.some(e=>e.event_type==='confirmation_email_queued'));
     const contacts=(await db.query('SELECT * FROM contacts')).rows;
     assert.equal(contacts.length,1); assert.equal(contacts[0].email_normalized,'buyer@example.com'); assert.equal(contacts[0].marketing_consent,false);
+  });
+  await t.test('CRM queue claims exclusively and retains updates made during a sync',async()=>{
+    const cid=(await db.query('SELECT contact_id FROM campaign_leads WHERE id=$1',[first.lead_id])).rows[0].contact_id;
+    const claim=(await db.query('SELECT claim_campaign_crm($1) AS job',[cid])).rows[0].job;
+    assert.ok(claim.claim_id);assert.equal(claim.snapshot.email,'buyer@example.com');
+    assert.equal((await db.query('SELECT claim_campaign_crm($1) AS job',[cid])).rows[0].job,null);
+    await db.query('SELECT queue_campaign_crm($1)',[cid]);
+    await db.query('SELECT finish_campaign_crm($1,$2,$3,$4,$5)',[cid,claim.claim_id,claim.revision,'zoho-123',null]);
+    assert.equal((await db.query('SELECT status FROM campaign_crm_sync WHERE contact_id=$1',[cid])).rows[0].status,'queued');
+    const newer=(await db.query('SELECT claim_campaign_crm($1) AS job',[cid])).rows[0].job;
+    await db.query('SELECT finish_campaign_crm($1,$2,$3,$4,$5)',[cid,newer.claim_id,newer.revision,null,'Provider failure']);
+    assert.equal((await db.query('SELECT status FROM campaign_crm_sync WHERE contact_id=$1',[cid])).rows[0].status,'failed');
   });
   await t.test('changed vote preserves first touch and records old/new values',async()=>{
     const result=await submit({product_id:opts[2].id,price_shown_cents:21900,purchase_intent:'maybe',attribution:{utm_source:'instagram',latest_touch_source:'instagram'}});
@@ -103,6 +115,25 @@ test('real PostgreSQL migrations and campaign workflows',async t=>{
     assert.equal(result.is_test,true);assert.equal(result.delivery_id,null);
     await call('save_campaign_content',{...content,id:testId,slug:'test-only',is_test:false,products:[]});
     assert.equal((await db.query('SELECT is_test FROM campaigns WHERE id=$1',[testId])).rows[0].is_test,true);
+  });
+  await t.test('test-only votes never enter the CRM queue',async()=>{
+    const result=await db.query("SELECT count(*)::int AS n FROM campaign_crm_sync q WHERE NOT EXISTS(SELECT 1 FROM campaign_leads l JOIN campaigns c ON c.id=l.campaign_id WHERE l.contact_id=q.contact_id AND NOT c.is_test)");
+    assert.equal(result.rows[0].n,0);
+    await db.exec('SET ROLE anon');
+    await assert.rejects(db.query('SELECT * FROM campaign_crm_sync'),/permission denied/);
+    await assert.rejects(db.query("SELECT queue_campaign_crm('00000000-0000-4000-8000-000000000001')"),/permission denied/);
+    await db.exec('RESET ROLE');
+  });
+  await t.test('unsubscribe queues current consent and CRM migration is repeatable',async()=>{
+    await db.exec(await readFile(new URL('../database/sql/campaign_zoho_sync.sql',import.meta.url),'utf8'));
+    const cid=(await db.query('SELECT contact_id FROM campaign_leads WHERE id=$1',[first.lead_id])).rows[0].contact_id;
+    await db.query('SELECT unsubscribe_campaign_contact($1)',[cid]);
+    await db.query("UPDATE campaign_crm_sync SET claimed_at=now()-interval '6 minutes' WHERE contact_id=$1",[cid]);
+    const claim=(await db.query('SELECT claim_campaign_crm($1) AS job',[cid])).rows[0].job;
+    assert.equal(claim.snapshot.unsubscribed,true);assert.equal(claim.snapshot.consent,false);
+    await db.query('SELECT finish_campaign_crm($1,$2,$3,$4,$5)',[cid,randomUUID(),claim.revision,'wrong-worker',null]);
+    assert.equal((await db.query('SELECT status FROM campaign_crm_sync WHERE contact_id=$1',[cid])).rows[0].status,'sending');
+    await db.query('SELECT finish_campaign_crm($1,$2,$3,$4,$5)',[cid,claim.claim_id,claim.revision,'zoho-123',null]);
   });
   await t.test('test votes cannot opt an existing contact back into marketing',async()=>{
     const opt=(await db.query("SELECT cp.* FROM campaign_products cp JOIN campaigns c ON c.id=cp.campaign_id WHERE c.slug='test-only' ORDER BY cp.display_order LIMIT 1")).rows[0];

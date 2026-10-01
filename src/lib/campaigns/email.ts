@@ -13,6 +13,8 @@ export async function deliverConfirmation(id: string): Promise<'sent'|'queued'|'
   const {data:job,error} = await supabaseAdmin.from('email_deliveries').select('*').eq('id',id).single();
   if (error || !job || job.template_key !== 'intent_confirmation' || !job.contact_id) return 'failed';
   if (job.status === 'sent') return 'sent';
+  // Email stays queued until a sender is deliberately selected. Zoho Mail setup is separate.
+  if (process.env.CAMPAIGN_EMAIL_PROVIDER !== 'resend') return 'queued';
   const key = process.env.RESEND_API_KEY;
   if (!key || !process.env.EMAIL_FROM) return 'queued';
   const attempted = job.attempted_at ? Date.parse(job.attempted_at) : 0;

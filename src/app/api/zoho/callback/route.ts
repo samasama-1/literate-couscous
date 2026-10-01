@@ -4,7 +4,7 @@ import { verifyAdminAccess } from '@/lib/adminAuth';
 import { stateCookie, zohoOAuthConfig } from '@/lib/zoho-oauth';
 
 function reply(body: Record<string, unknown>, status = 200) {
-  const response = NextResponse.json(body, { status, headers: { 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff' } });
+  const response = NextResponse.json(body, { status, headers: { 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY', 'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'" } });
   response.cookies.set(stateCookie, '', { path: '/api/zoho', maxAge: 0 });
   return response;
 }
