@@ -101,6 +101,24 @@ export interface Database {
           payment_status: 'PENDING_PAYNOW' | 'VERIFIED' | 'REFUNDED'
           payment_reference: string | null
           created_at: string
+          address_line1: string | null
+          address_line2: string | null
+          postal_code: string | null
+          fulfilment_method: 'collection' | 'delivery'
+          deposit_due_cents: number | null
+          deposit_verified_at: string | null
+          deposit_verified_by: string | null
+          final_total_cents: number | null
+          balance_due_cents: number | null
+          balance_paid_at: string | null
+          balance_reference: string | null
+          balance_token_hash: string | null
+          balance_token_expires_at: string | null
+          balance_requested_at: string | null
+          ready_at: string | null
+          fulfilled_at: string | null
+          fulfilled_by: string | null
+          received_by: string | null
         }
         Insert: {
           id?: string
@@ -113,6 +131,24 @@ export interface Database {
           payment_status?: 'PENDING_PAYNOW' | 'VERIFIED' | 'REFUNDED'
           payment_reference?: string | null
           created_at?: string
+          address_line1?: string | null
+          address_line2?: string | null
+          postal_code?: string | null
+          fulfilment_method?: 'collection' | 'delivery'
+          deposit_due_cents?: number | null
+          deposit_verified_at?: string | null
+          deposit_verified_by?: string | null
+          final_total_cents?: number | null
+          balance_due_cents?: number | null
+          balance_paid_at?: string | null
+          balance_reference?: string | null
+          balance_token_hash?: string | null
+          balance_token_expires_at?: string | null
+          balance_requested_at?: string | null
+          ready_at?: string | null
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          received_by?: string | null
         }
         Update: {
           id?: string
@@ -125,6 +161,24 @@ export interface Database {
           payment_status?: 'PENDING_PAYNOW' | 'VERIFIED' | 'REFUNDED'
           payment_reference?: string | null
           created_at?: string
+          address_line1?: string | null
+          address_line2?: string | null
+          postal_code?: string | null
+          fulfilment_method?: 'collection' | 'delivery'
+          deposit_due_cents?: number | null
+          deposit_verified_at?: string | null
+          deposit_verified_by?: string | null
+          final_total_cents?: number | null
+          balance_due_cents?: number | null
+          balance_paid_at?: string | null
+          balance_reference?: string | null
+          balance_token_hash?: string | null
+          balance_token_expires_at?: string | null
+          balance_requested_at?: string | null
+          ready_at?: string | null
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          received_by?: string | null
         }
         Relationships: [
           {

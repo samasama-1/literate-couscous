@@ -1,20 +1,22 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { joinGroupBuy } from '@/app/actions/join';
 
 interface Props {
   batchId: string;
   depositAmount: number;
+  payment: {uen?: string;payee?: string;qr?: string;configured:boolean};
 }
 
-export default function JoinGroupBuyForm({ batchId, depositAmount }: Props) {
-  const [formData, setFormData] = useState({ name: '', countryCode: '+65', phone: '', email: '', quantity: 1 });
+export default function JoinGroupBuyForm({ batchId, depositAmount, payment }: Props) {
+  const [formData, setFormData] = useState({ name: '', countryCode: '+65', phone: '', email: '', quantity: 1, addressLine1: '', addressLine2: '', postalCode: '', fulfilmentMethod: 'collection' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [orderCode, setOrderCode] = useState('');
-  const [isResumed, setIsResumed] = useState(false);
+  const [savedDeposit,setSavedDeposit]=useState<number|null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +28,11 @@ export default function JoinGroupBuyForm({ batchId, depositAmount }: Props) {
       customerName: formData.name,
       customerPhone: `${formData.countryCode}${formData.phone}`,
       customerEmail: formData.email,
-      quantity: formData.quantity
+      quantity: formData.quantity,
+      addressLine1: formData.addressLine1,
+      addressLine2: formData.addressLine2,
+      postalCode: formData.postalCode,
+      fulfilmentMethod: formData.fulfilmentMethod
     });
 
     if (res.error) {
@@ -34,7 +40,7 @@ export default function JoinGroupBuyForm({ batchId, depositAmount }: Props) {
       setLoading(false);
     } else if (res.success && res.orderCode) {
       setOrderCode(res.orderCode);
-      setIsResumed(!!res.message);
+      setSavedDeposit(res.depositCents ?? null);
       setSuccess(true);
       setLoading(false);
     }
@@ -42,15 +48,10 @@ export default function JoinGroupBuyForm({ batchId, depositAmount }: Props) {
 
   if (success) {
     return (
-      <div style={{ background: "white", padding: "3rem 2rem", borderRadius: "var(--radius-lg)", border: `2px solid ${isResumed ? 'var(--color-accent)' : 'var(--color-success)'}`, textAlign: "center", boxShadow: "var(--shadow-md)" }}>
-        {isResumed && (
-          <div style={{ background: "#FFF3CD", color: "#856404", padding: "1rem 1.5rem", borderRadius: "var(--radius-md)", marginBottom: "1.5rem", fontSize: "0.9rem", fontWeight: 600, textAlign: "left", border: "1px solid #FFEEBA" }}>
-            ⚠️ You already have a pending order for this batch tied to this phone number. We&apos;ve pulled up your existing order below. Please complete payment or contact support if you need help.
-          </div>
-        )}
-        <h2 style={{ color: isResumed ? 'var(--color-accent)' : 'var(--color-success)', marginBottom: "1rem" }}>{isResumed ? 'Existing Order Found' : 'Spot Reserved! 🎉'}</h2>
+      <div style={{ background: "white", padding: "3rem 2rem", borderRadius: "var(--radius-lg)", border: '2px solid var(--color-success)', textAlign: "center", boxShadow: "var(--shadow-md)" }}>
+        <h2 style={{color:'var(--color-success)',marginBottom:'1rem'}}>Order saved</h2>
         <p style={{ marginBottom: "2rem", fontSize: "var(--text-lg)" }}>
-          Please complete your deposit of <strong style={{ color: "var(--color-primary)" }}>${(depositAmount * formData.quantity).toFixed(2)}</strong> via PayNow to officially lock in your spot.
+          Please complete your deposit of <strong style={{ color: "var(--color-primary)" }}>${((savedDeposit ?? Math.round(depositAmount*100)*formData.quantity)/100).toFixed(2)}</strong> via PayNow to officially lock in your spot.
         </p>
         
         {/* Order Code Display */}
@@ -63,22 +64,11 @@ export default function JoinGroupBuyForm({ batchId, depositAmount }: Props) {
           ⚠️ Please screenshot or save this Order Code. You will need it to track your delivery status or contact support.
         </div>
         
-        {/* Dummy QR Code */}
-        <div style={{ width: "240px", height: "240px", background: "var(--color-surface)", margin: "0 auto 1.5rem", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "var(--radius-md)", border: "1px dashed var(--color-text-light)" }}>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: "3rem", marginBottom: "0.5rem" }}>📱</div>
-            <span style={{ color: "var(--color-text-muted)", fontWeight: 600 }}>[ Scan PayNow QR ]</span>
-          </div>
-        </div>
-        
-        <div style={{ background: "var(--color-surface)", padding: "1.5rem", borderRadius: "var(--radius-md)", display: "inline-block", textAlign: "left", marginBottom: "1.5rem" }}>
-          <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-muted)", marginBottom: "0.5rem" }}>
-            <strong>UEN:</strong> SAMA1234567M
-          </p>
-          <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-muted)" }}>
-            <strong>Reference:</strong> Please put your order code <strong style={{ color: "var(--color-primary)" }}>{orderCode}</strong> in the reference.
-          </p>
-        </div>
+        {payment.configured ? <div style={{marginBottom:24}}>
+          {payment.qr && <Image unoptimized src={payment.qr} alt="PayNow payment QR" width={240} height={240}/>}
+          <p>PayNow UEN: <strong>{payment.uen}</strong></p><p>Payee: <strong>{payment.payee}</strong></p>
+          <p>Use <strong>{orderCode}</strong> as the transaction reference.</p>
+        </div> : <p>Payment instructions are not available yet. Save your order code; SamaSama will provide payment instructions before you transfer.</p>}
 
         <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-light)" }}>
           Once transferred, our team will verify it and your order will instantly count towards the batch progress!
@@ -152,6 +142,16 @@ export default function JoinGroupBuyForm({ batchId, depositAmount }: Props) {
           />
         </div>
 
+        <fieldset style={{border:'1px solid var(--color-border)',padding:'1rem'}}>
+          <legend>Address and fulfilment</legend>
+          <p>We save this address now so you don’t need to enter it again when paying your balance. Singapore addresses only. Delivery availability and any charges will be confirmed before balance payment.</p>
+          <label style={{display:'block',marginBottom:12}}>Street / block and building *<input autoComplete="address-line1" required maxLength={200} value={formData.addressLine1} onChange={e=>setFormData({...formData,addressLine1:e.target.value})} style={{display:'block',width:'100%',padding:12}}/></label>
+          <label style={{display:'block',marginBottom:12}}>Unit number (if applicable)<input autoComplete="address-line2" maxLength={100} value={formData.addressLine2} onChange={e=>setFormData({...formData,addressLine2:e.target.value})} style={{display:'block',width:'100%',padding:12}}/></label>
+          <label style={{display:'block',marginBottom:12}}>Singapore postal code *<input autoComplete="postal-code" required inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={formData.postalCode} onChange={e=>setFormData({...formData,postalCode:e.target.value.replace(/\D/g,'')})} style={{display:'block',padding:12}}/></label>
+          <label>Preferred fulfilment<select value={formData.fulfilmentMethod} onChange={e=>setFormData({...formData,fulfilmentMethod:e.target.value})} style={{display:'block',padding:12}}><option value="collection">Self-collection</option><option value="delivery">Delivery (subject to confirmation)</option></select></label>
+          <p>Used for order fulfilment. <a href="/privacy">Privacy policy</a></p>
+        </fieldset>
+
         <div>
           <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 600 }}>Quantity (Max 10) *</label>
           <input 
@@ -168,7 +168,7 @@ export default function JoinGroupBuyForm({ batchId, depositAmount }: Props) {
         <div style={{ background: "var(--color-surface)", padding: "1.5rem", borderRadius: "var(--radius-md)", marginTop: "1rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: "1.25rem" }}>
             <span>Total Deposit Required:</span>
-            <span style={{ color: "var(--color-accent)" }}>${(depositAmount * formData.quantity).toFixed(2)}</span>
+            <span style={{ color: "var(--color-accent)" }}>${((savedDeposit ?? Math.round(depositAmount*100)*formData.quantity)/100).toFixed(2)}</span>
           </div>
         </div>
 

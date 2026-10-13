@@ -3,48 +3,15 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { verifyAdminAccess } from "@/lib/adminAuth";
 import { revalidatePath } from "next/cache";
-import { updateDealStageInZoho } from './zoho';
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Unauthorized.";
 }
 
 export async function verifyOrder(orderId: string) {
-  try {
-    await verifyAdminAccess();
-  } catch (err: unknown) {
-    return { error: getErrorMessage(err) };
-  }
-
-  const { error } = await supabaseAdmin
-    .from('orders')
-    .update({ payment_status: 'VERIFIED' })
-    .eq('id', orderId);
-
-  if (error) {
-    console.error('Failed to verify order:', error);
-    return { error: 'Failed to verify order in database.' };
-  }
-
-  // Revalidate the homepage and admin routes so the progress bars jump instantly!
-  revalidatePath('/');
-  revalidatePath('/admin');
-  revalidatePath('/group-buys/[id]', 'page');
-
-  // Update the Zoho CRM Deal stage (non-blocking)
-  // Fetch the order code so we can find the Deal in Zoho
-  const { data: order } = await supabaseAdmin
-    .from('orders')
-    .select('order_code')
-    .eq('id', orderId)
-    .single();
-
-  if (order?.order_code) {
-    updateDealStageInZoho(order.order_code, 'Deposit Verified')
-      .catch(err => console.error('[Zoho] Deal stage update failed:', err));
-  }
-  
-  return { success: true };
+  await verifyAdminAccess();
+  if(!orderId) return {error:'Order is required.'};
+  return {error:'Use the order detail page to verify the amount and bank reference.'};
 }
 
 export async function createLobang(

@@ -1,6 +1,7 @@
 'use server';
 
 import 'server-only';
+import { limitRequest } from "@/lib/campaigns/security";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export interface SafeOrderPayload {
@@ -16,15 +17,11 @@ export interface SafeOrderPayload {
 }
 
 export async function lookupOrder(orderId: string, authValue: string) {
-  // TODO: Implement rate limiting to prevent brute force order ID enumeration
-  // TODO: Ensure order IDs are UUIDs or non-sequential secure tokens
-
-  if (!orderId || !authValue) {
-    return { error: 'Please provide both an Order Code and a Phone Number or Email.' };
-  }
+  if(typeof orderId!=='string'||typeof authValue!=='string'||!orderId.trim()||!authValue.trim()||orderId.length>32||authValue.length>254) return {error:'Order not found or authentication mismatch.'};
+  try { await limitRequest('order-lookup',10); } catch { return {error:'Order lookup is temporarily unavailable. Please wait and try again.'}; }
 
   // Normalize inputs
-  const cleanOrderId = orderId.trim();
+  const cleanOrderId = orderId.trim().toUpperCase();
   const cleanAuthValue = authValue.trim().toLowerCase();
 
   // Generic anti-enumeration error
@@ -33,7 +30,7 @@ export async function lookupOrder(orderId: string, authValue: string) {
   // 1. Fetch the order securely bypassing RLS
   const { data: order, error: orderError } = await supabaseAdmin
     .from('orders')
-    .select('*')
+    .select('payment_status,quantity,batch_id,customer_phone,customer_email')
     .eq('order_code', cleanOrderId)
     .single();
 

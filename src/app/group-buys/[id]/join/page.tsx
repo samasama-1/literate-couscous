@@ -1,3 +1,4 @@
+import {paymentConfig} from '@/lib/orders/payment-config';
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -5,7 +6,7 @@ import JoinGroupBuyForm from "@/components/JoinGroupBuyForm";
 
 export const revalidate = 0;
 
-export default async function JoinPage({ params }: { params: { id: string } }) {
+export default async function JoinPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   
   // Verify batch exists and is OPEN
@@ -39,7 +40,7 @@ export default async function JoinPage({ params }: { params: { id: string } }) {
         </p>
       </div>
 
-      <JoinGroupBuyForm batchId={batch.batch_id} depositAmount={batch.deposit_amount} />
+      <JoinGroupBuyForm batchId={batch.batch_id} depositAmount={batch.deposit_amount} payment={paymentConfig()} />
     </div>
   );
 }
