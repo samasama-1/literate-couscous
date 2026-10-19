@@ -1,0 +1,4 @@
+# This endpoint uses a dedicated export secret, validated inside the handler.
+# Do not disable JWT verification globally or for other functions.
+[functions.operations-export]
+verify_jwt = false
