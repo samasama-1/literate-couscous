@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { submitCampaignIntent, startCampaignSession } from "@/app/actions/campaigns";
 import { formatMoney, getSpecs } from "@/lib/campaigns/utils";
-import { purchaseIntentLabels, type AttributionInput, type Campaign, type CampaignProduct, type PurchaseIntent } from "@/lib/campaigns/types";
+import { type AttributionInput, type Campaign, type CampaignProduct, type PurchaseIntent } from "@/lib/campaigns/types";
 
 declare global {
   interface Window {
@@ -62,7 +62,8 @@ async function recordEvent(eventType: string, campaignId: string, anonymousSessi
 
 export default function CampaignIntentForm({ campaign, products, metaPixelEnabled, tiktokPixelEnabled, preview = false }: Props) {
   const [selectedProductId, setSelectedProductId] = useState("");
-  const [intent, setIntent] = useState<PurchaseIntent | "">("");
+  // Registering a selected product expresses interest; marketing consent stays separate.
+  const intent: PurchaseIntent = "yes";
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [telegram, setTelegram] = useState("");
@@ -102,17 +103,17 @@ export default function CampaignIntentForm({ campaign, products, metaPixelEnable
 
   function selectProduct(product: CampaignProduct) {
     setSelectedProductId(product.id);
-    setIntent("");
     requestId.current = null;
     void trackEvent("product_selected",product.id);
+    void trackEvent("intent_started",product.id);
     if (!preview) trackPixel("ProductSelected", { meta: metaPixelEnabled, tiktok: tiktokPixelEnabled }, { campaign_slug: campaign.slug, product_id: product.id });
     window.setTimeout(() => intentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selectedProduct || !intent) {
-      setState({ status: "error", message: "Please choose a product and tell us whether you’re interested." });
+    if (!selectedProduct) {
+      setState({ status: "error", message: "Please choose a product to register your interest." });
       return;
     }
 
@@ -233,26 +234,8 @@ export default function CampaignIntentForm({ campaign, products, metaPixelEnable
       {selectedProduct && (
         <section ref={intentRef} className="campaign-shell campaign-intent">
           <p className="section-label">Product interest</p>
-          <h2>Are you interested in {selectedProduct.public_name}?</h2>
-          <p>Your interest helps us decide what to bring in next. No purchase or payment is required.</p>
-          <div className="campaign-intent-grid" role="radiogroup" aria-label="Product interest">
-            {(["yes", "no"] as PurchaseIntent[]).map((value) => (
-              <label key={value} className={`campaign-intent-option ${intent === value ? "selected" : ""}`}>
-                <input
-                  type="radio"
-                  name="purchaseIntent"
-                  value={value}
-                  checked={intent === value}
-                  onChange={() => {
-                    setIntent(value);
-                    void trackEvent("intent_started", selectedProduct.id);
-                  }}
-                  required
-                />
-                <span>{purchaseIntentLabels[value]}</span>
-              </label>
-            ))}
-          </div>
+          <h2>Register your interest in {selectedProduct.public_name}</h2>
+          <p>Submitting your pick tells us you’re interested in this product and helps us decide what to bring in next. No purchase or payment is required.</p>
 
           <div className="campaign-contact-grid">
             <label>
