@@ -61,7 +61,9 @@ See [Zoho voting sync setup](zoho-voting-sync.md) for the fourth migration, Lead
 
 ## Confirmation emails and unsubscribe
 
-Email sending now requires an explicit `CAMPAIGN_EMAIL_PROVIDER=resend` setting; leave it unset while preparing Zoho Mail. Zoho Mail sending is not implemented yet.
+For the full Zoho Mail + Cloudflare setup and website integration plan, see [Email integration setup](email-integration-setup.md).
+
+Email sending requires explicit provider selection: `CAMPAIGN_EMAIL_PROVIDER=resend` for the existing Resend transport, or `CAMPAIGN_EMAIL_PROVIDER=zoho` after completing the separate [Zoho Mail setup](zoho-mail-setup.md). Keep it unset to leave messages queued. Mail support is prepared locally; production authorization and activation must be tested separately.
 
 A live registration saves first and creates a confirmation-email job in the same transaction. The app attempts delivery immediately. Missing email configuration or provider failures do not discard the pick.
 
@@ -72,7 +74,7 @@ In a lead's detail page:
 - **Sent:** the provider accepted the request; this is not proof of inbox delivery or reading.
 - **Failed:** see the error and retry after correcting the issue.
 
-After configuring email, use **Retry confirmation** in the lead detail. There is no automatic scheduled retry worker in this version. Retries reuse the delivery's unique provider key. Ambiguous attempts older than 23 hours are blocked: check the provider log before asking for a manual resend, to avoid sending twice. Resend documents a 24-hour deduplication window: https://resend.com/changelog/idempotency-keys.
+After configuring email, use **Retry confirmation** in the lead detail. There is no automatic scheduled retry worker in this version. Resend retries reuse the delivery's unique provider key. An uncertain Zoho send requires provider-record review and is blocked from another send; a known failure before sending can be retried. Attempted jobs cannot silently switch providers. Ambiguous attempts older than 23 hours are blocked: check the provider log before asking for a manual resend, to avoid sending twice. Resend documents a 24-hour deduplication window: https://resend.com/changelog/idempotency-keys.
 
 Test campaigns do not queue or send confirmation emails. The full live inbox/visitor journey test is intentionally deferred until your front end and sender are ready.
 

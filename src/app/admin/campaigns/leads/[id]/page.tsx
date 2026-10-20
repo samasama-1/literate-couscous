@@ -122,7 +122,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
 
       <section style={{ background: "white", border: "1px solid var(--color-border)", borderRadius: "var(--radius-lg)", padding: "1.25rem" }}>
         <h2 style={{ fontSize: "1.25rem", letterSpacing: 0, marginBottom: "1rem" }}>Email deliveries</h2>
-        <p>Queued messages wait for email configuration. Retry once it is configured. Attempts over 23 hours old require checking the provider delivery log first; automatic retry is blocked to prevent duplicates.</p>
+        <p>Queued messages wait for email configuration. Resend retries use the same delivery key within 23 hours. An uncertain Zoho send, or a provider change after an attempt, requires checking provider records before another send. Retry is safe after a preparation failure that occurred before sending.</p>
         {!emails || emails.length === 0 ? <p>No email delivery records yet.</p> : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
