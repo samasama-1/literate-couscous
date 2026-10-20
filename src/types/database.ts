@@ -41,6 +41,7 @@ export interface Database {
       }
       batches: {
         Row: {
+          admin_revision: number
           id: string
           product_id: string
           status: 'OPEN' | 'CLOSED' | 'DELIVERED'
@@ -605,6 +606,9 @@ export interface Database {
       }
     }
     Functions: {
+      admin_save_batch: { Args: { p: Json }; Returns: string }
+      admin_delete_empty_batch: { Args: { p_id: string; p_revision: number; p_confirmation: string }; Returns: string }
+
       campaign_rate_limit: { Args: { p_key: string; p_limit: number; p_seconds: number }; Returns: boolean }
       register_campaign_intent: { Args: { p: Json }; Returns: Json }
       record_campaign_event: { Args: { p: Json }; Returns: undefined }

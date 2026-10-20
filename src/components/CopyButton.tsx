@@ -4,13 +4,21 @@ import { useState } from "react";
 
 export default function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   return (
     <button
-      onClick={() => {
-        navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+      type="button"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          setCopied(true);
+          setFailed(false);
+          setTimeout(() => setCopied(false), 2000);
+        } catch {
+          setCopied(false);
+          setFailed(true);
+        }
       }}
       className="btn btn-dark"
       style={{
@@ -19,7 +27,7 @@ export default function CopyButton({ text }: { text: string }) {
         fontSize: "var(--text-xs)",
       }}
     >
-      {copied ? "Copied!" : "Copy"}
+      {copied ? "Copied!" : failed ? "Select link to copy" : "Copy"}
     </button>
   );
 }

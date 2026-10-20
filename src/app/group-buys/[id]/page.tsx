@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 import CopyButton from "@/components/CopyButton";
+import { publicBatchUrl } from "@/lib/batches/validation";
 import SamaSamaStandardSummary from "@/components/SamaSamaStandardSummary";
 import { getProductStandardEvaluation } from "@/lib/samasamaStandard";
 
@@ -597,13 +598,13 @@ export default async function BatchDetailPage({ params }: PageProps) {
               Share the Savings
             </h3>
             <p style={{ fontSize: "var(--text-sm)", color: "var(--color-primary-muted)", lineHeight: 1.6, marginBottom: "1.5rem" }}>
-              Every friend who joins brings us closer to the lowest tier price. Share your unique link and earn credit when they join.
+              Share this batch with friends so they can view the details and join the group buy.
             </p>
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <input 
                 type="text" 
                 readOnly 
-                value={`samasama.sg/gb/${batch.batch_id}`} 
+                value={publicBatchUrl(batch.batch_id, process.env.NEXT_PUBLIC_SITE_URL || 'https://www.samasama.sg')}
                 style={{ 
                   flex: 1, 
                   fontFamily: "var(--font-body)", 
@@ -615,7 +616,7 @@ export default async function BatchDetailPage({ params }: PageProps) {
                   outline: "none"
                 }} 
               />
-              <CopyButton text={`samasama.sg/gb/${batch.batch_id}`} />
+              <CopyButton text={publicBatchUrl(batch.batch_id, process.env.NEXT_PUBLIC_SITE_URL || 'https://www.samasama.sg')} />
             </div>
           </div>
 

@@ -46,11 +46,12 @@ Never prefix credentials with `NEXT_PUBLIC_`. No SQL migration, Supabase secret 
 Deployment remains an owner-approved action. After that deployment/restart:
 
 1. Sign into your SamaSama admin account on the exact configured hostname.
-2. Open `/api/zoho/mail/authorize` on that same hostname. For the www production choice: `https://www.samasama.sg/api/zoho/mail/authorize`.
-3. In Zoho's consent screen use the account that owns/can send as `hello@samasama.sg`. Approve message creation and account information read access. These are `ZohoMail.messages.CREATE` and `ZohoMail.accounts.READ`; no inbox-content reading/deletion scopes are requested.
-4. Zoho returns to the Mail callback. The server discovers the account matching the configured sender. Wrong accounts, multiple matches, missing offline token and mismatched regions fail closed.
-5. The admin-only result shows `ZOHO_MAIL_REFRESH_TOKEN` and `ZOHO_MAIL_ACCOUNT_ID`. Copy both directly into private server environment variables with those exact names. Close the response afterward; do not screenshot/share it. It intentionally returns the refresh token once for owner setup, never the access token or client secret.
-6. Redeploy/restart to load those two values. Keep the CRM refresh token unchanged.
+2. Open `/api/zoho/mail/authorize` on that same hostname. For the www production choice: `\
+3. 
+4. In Zoho's consent screen use the account that owns/can send as `hello@samasama.sg`. Approve message creation and account information read access. These are `ZohoMail.messages.CREATE` and `ZohoMail.accounts.READ`; no inbox-content reading/deletion scopes are requested.
+5. Zoho returns to the Mail callback. The server discovers the account matching the configured sender. Wrong accounts, multiple matches, missing offline token and mismatched regions fail closed.
+6. The admin-only result shows `ZOHO_MAIL_REFRESH_TOKEN` and `ZOHO_MAIL_ACCOUNT_ID`. Copy both directly into private server environment variables with those exact names. Close the response afterward; do not screenshot/share it. It intentionally returns the refresh token once for owner setup, never the access token or client secret.
+7. Redeploy/restart to load those two values. Keep the CRM refresh token unchanged.
 
 Authorization alone sends no email. The short-lived OAuth cookie contains random state, never tokens, is separate from CRM, HttpOnly and SameSite=Lax, expires after 10 minutes, and is Secure on HTTPS. The callback clears that cookie on success or failure. Setup responses are no-store, no-referrer and framed off; application code does not log tokens/codes/provider bodies. Provider/infrastructure access logs and browser history still need normal restricted handling for OAuth callback URLs.
 

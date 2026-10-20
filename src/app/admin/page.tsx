@@ -43,7 +43,7 @@ export default async function AdminDashboard({searchParams}: {searchParams: Prom
   return <AdminWorkspace collection={collection}>
     <header className={styles.heading}>
       <div><div className={styles.eyebrow}>{collection ? 'MAKE EVERY HANDOVER COUNT' : 'YOUR DAILY OPERATIONS'}</div><h1>{collection ? 'Collection desk' : 'Orders, in good order.'}</h1><p>{collection ? 'Find the customer. Check the payment. Record the handover.' : 'Follow payments, prepare your orders and keep every handover accounted for.'}</p></div>
-      <div className={styles.actions}><Link className={styles.button} href={pageUrl(page)}>↻ Refresh</Link>{!collection && <Link href="/admin?compose=1#new-batch" className={styles.primaryButton}>＋ New batch</Link>}</div>
+      <div className={styles.actions}><Link className={styles.button} href={pageUrl(page)}>↻ Refresh</Link>{!collection && <Link href="/admin/batches?compose=1#new-batch" className={styles.primaryButton}>＋ New batch</Link>}</div>
     </header>
     <section className={`${styles.metrics} ${collection ? styles.collectionMetrics : ''}`} aria-label="Order summary">{metrics.map(m => <div key={m.label} className={styles.metric}><span>{m.label}</span><strong>{m.value}</strong><small>{m.foot}</small></div>)}</section>
     <section className={styles.panel} aria-labelledby="order-list-heading">
