@@ -15,6 +15,7 @@ export default async function OrderDetail({params}:{params:Promise<{id:string}>}
  const {data:batch}=await supabaseAdmin.from('batches').select('*').eq('id',o.batch_id).single();
  const {data:product}=batch?await supabaseAdmin.from('products').select('name').eq('id',batch.product_id).single():{data:null};
  const {data:history,error}=await orderDb().from('order_activity').select('action,actor,metadata,created_at').eq('order_id',id).order('created_at',{ascending:false});
+ const jobs=process.env.ORDER_INTEGRATIONS_INSTALLED==='true'?await orderDb().from('order_integration_jobs').select('id,kind,event,status,available_at,completed_at,error_code,provider_id').eq('order_id',id).order('created_at',{ascending:false}).limit(30):null;
  const deposit=o.deposit_due_cents??Math.round(Number(batch?.deposit_amount||0)*100)*o.quantity;
  const active=o.payment_status!=='REFUNDED'&&!o.fulfilled_at;
  const full=paymentCleared(o);
@@ -34,6 +35,7 @@ export default async function OrderDetail({params}:{params:Promise<{id:string}>}
  <div>Remaining balance<strong>{money(o.balance_due_cents)}</strong><small>{o.balance_due_cents===0?'No balance due':o.balance_paid_at?'Verified':'Not verified'}</small></div>
  <div>Final total<strong>{money(o.final_total_cents)}</strong><small>Whole order · SGD</small></div>
  </div><dl className={styles.descriptionList}><div><dt>Deposit verified</dt><dd>{dateTime(o.deposit_verified_at)}</dd></div><div><dt>Balance verified</dt><dd>{dateTime(o.balance_paid_at)}</dd></div><div><dt>Marked ready</dt><dd>{dateTime(o.ready_at)}</dd></div><div><dt>Handover recorded</dt><dd>{dateTime(o.fulfilled_at)}</dd></div></dl></section>
+ {jobs&&<section className={styles.detailSection}><h2>Email & CRM deliveries</h2>{jobs.error?<p>Unable to read integration jobs. Check the queue setup.</p>:jobs.data?.length?<div className={styles.timeline}>{jobs.data.map(j=><article key={j.id} className={styles.event}><strong>{j.kind==='email'?'Email':'CRM'} · {j.event.replaceAll('_',' ')}</strong><p>{j.status==='sent'?(j.kind==='email'?'Accepted by email provider':'Synced to CRM'):j.status} · {dateTime(j.completed_at||j.available_at)}</p>{j.error_code&&<small>{j.error_code} — review before retrying an uncertain send.</small>}</article>)}</div>:<p>No integration jobs yet. Only new order events are queued after installation.</p>}</section>}
  <section className={styles.detailSection}><h2>Activity history</h2>{error?<p role="alert">Unable to load activity. Check the fulfilment setup.</p>:history?.length?<div className={styles.timeline}>{history.map(h=><article key={`${h.created_at}-${h.action}`} className={styles.event}><strong>{h.action.replaceAll('_',' ')}</strong><small>{dateTime(h.created_at)} · {h.actor}</small><details><summary>View recorded details</summary><pre>{JSON.stringify(h.metadata,null,2)}</pre></details></article>)}</div>:<p>No recorded activity yet.</p>}</section>
  </div>
  <aside className={styles.panel}><section className={styles.detailSection}><h2>Next steps</h2>
