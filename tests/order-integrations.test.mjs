@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {randomUUID,createHash} from 'node:crypto';
+import {randomUUID,createHash,createHmac} from 'node:crypto';
 import {PGlite} from '@electric-sql/pglite';
 import {sealLink,openLink} from '../src/lib/order-integrations/links.ts';
 import {emailStillRelevant,publicOrigin} from '../src/lib/order-integrations/policy.ts';
-import {handleWorker} from '../src/lib/order-integrations/endpoint.ts';
+import {handleWorker,scheduledInvocation} from '../src/lib/order-integrations/endpoint.ts';
 import {crmRecord,prepareCrm,orderSummary,orderFieldTypes,validateOrderFields} from '../src/lib/order-integrations/crm.ts';
 const secret='a'.repeat(64);
 const fieldMetadata={fields:Object.entries(orderFieldTypes).map(([api_name,types])=>({api_name,data_type:types[0],operation_type:{api_create:true,api_update:true},field_read_only:false,read_only:false}))};
@@ -147,3 +147,14 @@ test('worker leases, pre-send retries, changed state, RPC failure and ambiguous 
  }
  }finally{for(const k of Object.keys(process.env))if(!(k in previous))delete process.env[k];Object.assign(process.env,previous);}
 });
+
+ test('scheduled worker signatures expire, bind the channel and require a single-use claim before dispatch',async()=>{
+ const id=randomUUID(),issued=String(Math.floor(Date.now()/1000));
+ const signature=createHmac('sha256',secret).update(`email:${id}:${issued}`).digest('hex');
+ const request=new Request('https://example.com/?kind=email',{headers:{'x-order-worker-id':id,'x-order-worker-issued':issued,'x-order-worker-signature':signature}});
+ assert.ok(scheduledInvocation(request,secret));assert.equal(scheduledInvocation(request,secret,Number(issued)*1000+301000),null);assert.equal(scheduledInvocation(request,secret,Number(issued)*1000-31000),null);
+ assert.equal(scheduledInvocation(new Request('https://example.com/?kind=crm',{headers:request.headers}),secret),null);
+ let used=false,calls=0;const run=async()=>{calls++;return {enabled:true,processed:0};};const claim=async()=>{if(used)return false;used=true;return true;};
+ assert.equal((await handleWorker(request,secret,run)).status,401);assert.equal((await handleWorker(request,secret,run,claim)).status,200);assert.equal((await handleWorker(request,secret,run,claim)).status,409);assert.equal(calls,1);
+ assert.equal((await handleWorker(request,secret,run,async()=>{throw Error('PRIVATE');})).status,503);
+ });

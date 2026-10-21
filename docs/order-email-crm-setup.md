@@ -104,3 +104,7 @@ Before public activation, use a staging project (or separately approved tightly 
 ## Renew CRM consent after adding Orders permissions
 
 The CRM authorisation route now retains its existing Leads/Contacts/Deals/search scopes and also requests `ZohoCRM.settings.fields.READ`, `ZohoCRM.modules.custom.CREATE` and `ZohoCRM.modules.custom.UPDATE`. After deploying this route, sign into the website admin on the registered callback hostname and visit `/api/zoho/authorize`. Approve with the CRM account, save the returned refresh token privately as production `ZOHO_REFRESH_TOKEN`, and redeploy. Keep the existing client ID/secret, prior permissions and all `ZOHO_MAIL_*` settings unchanged. Updating the route alone does not upgrade existing tokens. No token is changed automatically by deployment.
+
+## Automatic scheduling follow-up
+
+On 21 October 2026, Marcus approved the existing workers running every five minutes. The installation, Vault-backed single-use signed authentication, activation/pausing instructions and status checks are in [order-worker-scheduling.md](order-worker-scheduling.md). This supersedes the manual-scheduler setup instructions above; it does not implement timed customer reminders.
