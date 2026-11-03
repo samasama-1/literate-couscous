@@ -897,7 +897,7 @@
   color: var(--muted);
 }
 
-.operationForm input {
+.operationForm input,.operationForm select {
   display: block;
   width: 100%;
   padding: 11px 12px;

@@ -119,6 +119,8 @@ export interface Database {
           ready_at: string | null
           fulfilled_at: string | null
           fulfilled_by: string | null
+          balance_revision: number
+          collection_access_version: number
           received_by: string | null
         }
         Insert: {
@@ -149,6 +151,8 @@ export interface Database {
           ready_at?: string | null
           fulfilled_at?: string | null
           fulfilled_by?: string | null
+          balance_revision?: number
+          collection_access_version?: number
           received_by?: string | null
         }
         Update: {
@@ -179,6 +183,8 @@ export interface Database {
           ready_at?: string | null
           fulfilled_at?: string | null
           fulfilled_by?: string | null
+          balance_revision?: number
+          collection_access_version?: number
           received_by?: string | null
         }
         Relationships: [

@@ -1,5 +1,6 @@
 export type OrderReadiness = {
   payment_status: string;
+  fulfilment_method?:string;
   deposit_due_cents: number | null;
   final_total_cents: number | null;
   balance_due_cents: number | null;
@@ -24,6 +25,7 @@ export function orderStatus(order: OrderReadiness) {
   if (order.payment_status === 'REFUNDED') return {label: 'Refunded', tone: 'neutral'};
   if (order.fulfilled_at) return {label: 'Completed', tone: 'neutral'};
   if (readyForHandover(order)) return {label: 'Ready for handover', tone: 'success'};
+  if(order.fulfilment_method==='collection'&&order.payment_status==='VERIFIED'&&order.final_total_cents!=null&&order.deposit_due_cents!=null&&order.balance_due_cents!=null&&order.final_total_cents===order.deposit_due_cents+order.balance_due_cents&&order.balance_due_cents>0&&!order.balance_paid_at)return {label:order.ready_at?'Ready · balance due at collection':'Balance due at collection',tone:'warning'};
   if (order.payment_status === 'PENDING_PAYNOW') return {label: 'Deposit pending', tone: 'warning'};
   if (paymentCleared(order)) return {label: 'Paid · awaiting readiness', tone: 'success'};
   return {label: 'Payment review', tone: 'warning'};

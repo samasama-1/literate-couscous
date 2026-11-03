@@ -36,5 +36,21 @@ test('scheduler starts paused, reads Vault only during dispatch, throttles calls
  for(const role of ['anon','authenticated'])assert.equal((await db.query(`SELECT has_table_privilege('${role}','public.order_worker_dispatches','SELECT') ok`)).rows[0].ok,false);
  const fn=(await db.query("SELECT pg_get_userbyid(proowner) owner,proconfig FROM pg_proc WHERE proname='dispatch_order_worker'")).rows[0];assert.equal(fn.owner,'postgres');assert.deepEqual(fn.proconfig,['search_path=pg_catalog, pg_temp']);
  await db.exec(sql);assert.ok((await db.query('SELECT active FROM cron.job')).rows.every(j=>j.active));
+ // V2 is a separate, paused cutover. Its provider gate must prevent network enqueueing.
+ await db.exec("CREATE TABLE order_runtime_limits(kind text PRIMARY KEY,enabled boolean);INSERT INTO order_runtime_limits VALUES('email',false),('crm',false)");
+ const v2=(await readFile(new URL('../database/sql/order_worker_schedule_v2.sql',import.meta.url),'utf8')).replace('CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;','').replace(/DO \$\$ BEGIN\n IF NOT EXISTS[\s\S]*?END \$\$;/,'');
+ await db.exec(v2);await db.exec(v2);
+ const paused=(await db.query("SELECT * FROM cron.job WHERE jobname LIKE 'samasama-order-v2-%'")).rows;assert.equal(paused.length,2);assert.ok(paused.every(j=>!j.active&&j.schedule==='* * * * *'));
+ assert.equal((await db.query("SELECT dispatch_order_worker_v2('email')r")).rows[0].r,null);
+ assert.equal((await db.query('SELECT count(*)::int n FROM net.http_request_queue')).rows[0].n,2);
+ await db.exec("UPDATE order_runtime_limits SET enabled=true;UPDATE order_worker_dispatches SET dispatched_at=now()-interval '10 minutes'");
+ await db.query("SELECT dispatch_order_worker_v2('email')");await db.query("SELECT dispatch_order_worker_v2('email')");assert.equal((await db.query('SELECT count(*)::int n FROM net.http_request_queue')).rows[0].n,3);
+ for(const role of ['anon','authenticated','service_role'])assert.equal((await db.query("SELECT has_function_privilege($1,'dispatch_order_worker_v2(text)','EXECUTE')ok",[role])).rows[0].ok,false);
+ // Only the missing hosted extension assertion is emulated; retain paused-job/idempotency behavior.
+ await db.exec('CREATE FUNCTION cleanup_order_runtime(integer)RETURNS jsonb LANGUAGE sql AS $$SELECT \'{}\'::jsonb$$');
+ const cleanup=(await readFile(new URL('../database/sql/order_runtime_cleanup_schedule.sql',import.meta.url),'utf8')).replace(" OR NOT EXISTS(SELECT 1 FROM pg_catalog.pg_extension WHERE extname='pg_cron')",'');
+ await db.exec(cleanup);await db.exec(cleanup);const maintenance=(await db.query("SELECT * FROM cron.job WHERE jobname='samasama-runtime-cleanup'")).rows;assert.equal(maintenance.length,1);assert.equal(maintenance[0].active,false);assert.match(maintenance[0].command,/cleanup_order_runtime\(500\)/);
+ const namedCleanup=(await readFile(new URL('../database/sql/collection_named_cleanup_schedule.sql',import.meta.url),'utf8')).replace("OR NOT EXISTS(SELECT 1 FROM pg_catalog.pg_extension WHERE extname='pg_cron')",'');
+ await db.exec(namedCleanup);await db.exec(namedCleanup);const namedJobs=(await db.query("SELECT * FROM cron.job WHERE jobname='samasama-named-collector-cleanup'")).rows;assert.equal(namedJobs.length,1);assert.equal(namedJobs[0].active,false);assert.match(namedJobs[0].command,/cleanup_named_collectors\(500\)/);
  await db.close();
 });

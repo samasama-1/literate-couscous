@@ -1,3 +1,4 @@
+import {observeWorkerRequest} from '@/lib/operations/telemetry';
 import {orderDb} from '@/lib/orders/db';
 import {handleWorker} from '@/lib/order-integrations/endpoint';
 import {processOrderJobs} from '@/lib/order-integrations/worker';
@@ -9,5 +10,5 @@ async function claimInvocation(input:{kind:'email'|'crm';id:string;issued:number
  if(error)throw Error('INVOCATION_VALIDATION_FAILED');return data===true;
 }
 // GET supports authenticated cron providers; POST supports manual owner-controlled runs.
-export async function GET(request:Request){return handleWorker(request,process.env.ORDER_WORKER_SECRET,processOrderJobs,claimInvocation);}
-export async function POST(request:Request){return handleWorker(request,process.env.ORDER_WORKER_SECRET,processOrderJobs,claimInvocation);}
+export async function GET(request:Request){return observeWorkerRequest(()=>handleWorker(request,process.env.ORDER_WORKER_SECRET,processOrderJobs,claimInvocation));}
+export async function POST(request:Request){return observeWorkerRequest(()=>handleWorker(request,process.env.ORDER_WORKER_SECRET,processOrderJobs,claimInvocation));}

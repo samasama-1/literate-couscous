@@ -1,10 +1,10 @@
 import type {MailMessage} from './zoho-transport';
 export type Provider = 'resend' | 'zoho';
 export type DeliveryJob = {id: string; status: 'queued' | 'sending' | 'sent' | 'failed' | 'skipped'; attempted_at: string | null; provider: string | null; metadata: unknown};
-export type DeliveryPatch = {status: 'sent' | 'failed'; metadata: Record<string, unknown>; error_message: string | null; provider_message_id?: string; sent_at?: string; failed_at?: string};
+export type DeliveryPatch = {status: 'sent' | 'failed' | 'queued'; metadata: Record<string, unknown>; error_message: string | null; provider_message_id?: string; sent_at?: string; failed_at?: string};
 export type DeliveryStore = {
   claim(job: DeliveryJob, at: string, provider: Provider, metadata: Record<string, unknown>): Promise<boolean>;
-  markSending(at: string, metadata: Record<string, unknown>): Promise<boolean>;
+  markSending(at: string, metadata: Record<string, unknown>): Promise<boolean|'deferred'>;
   finish(at: string, patch: DeliveryPatch): Promise<boolean>;
   block(job: DeliveryJob, message: string): Promise<void>;
 };
@@ -40,7 +40,9 @@ export async function deliverOnce({job, provider, store, buildMessage, prepare, 
     const message = buildMessage();
     const send = await prepare();
     // A previous worker may have lost its lease. Never POST without an exclusive marker.
-    if (!await store.markSending(at, {...metadata, _mail_outcome: 'unknown'})) throw new Error('MAIL_CLAIM_LOST');
+    const marker=await store.markSending(at, {...metadata, _mail_outcome: 'unknown'});
+    if(marker==='deferred'){await store.finish(at,{status:'queued',metadata:{...metadata,_mail_outcome:'not_sent'},error_message:'Awaiting safe sending capacity.'});return 'queued';}
+    if (!marker) throw new Error('MAIL_CLAIM_LOST');
     postStarted = true;
     const messageId = await send(message);
     const saved = await store.finish(at, {status: 'sent', metadata: {...metadata, _mail_outcome: 'accepted'},

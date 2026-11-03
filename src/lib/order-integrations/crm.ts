@@ -27,8 +27,9 @@ function date(value:unknown):string|null {
 export function orderSummary(o:Record<string,unknown>) {
  const full=o.payment_status==='VERIFIED'&&[o.final_total_cents,o.deposit_due_cents,o.balance_due_cents].every(v=>Number.isSafeInteger(v)&&Number(v)>=0)
   && o.final_total_cents===Number(o.deposit_due_cents)+Number(o.balance_due_cents) && (o.balance_due_cents===0||!!o.balance_paid_at);
- const payment=o.payment_status==='REFUNDED'?'Refunded':o.payment_status==='PENDING_PAYNOW'?'Awaiting deposit':o.payment_status!=='VERIFIED'?'Needs review':full?'Fully paid':o.balance_requested_at&&Number(o.balance_due_cents)>0?'Awaiting balance':'Deposit verified';
- const fulfilment=o.payment_status==='REFUNDED'?'Cancelled':o.fulfilled_at?full?(o.fulfilment_method==='delivery'?'Delivered':'Collected'):'Needs review':o.ready_at?full?'Ready':'Needs review':o.payment_status==='VERIFIED'?'Preparing':'Pending';
+ const collectionDue=o.fulfilment_method==='collection'&&o.payment_status==='VERIFIED'&&[o.final_total_cents,o.deposit_due_cents,o.balance_due_cents].every(v=>Number.isSafeInteger(v)&&Number(v)>=0)&&o.final_total_cents===Number(o.deposit_due_cents)+Number(o.balance_due_cents)&&Number(o.balance_due_cents)>0&&!o.balance_paid_at;
+ const payment=o.payment_status==='REFUNDED'?'Refunded':o.payment_status==='PENDING_PAYNOW'?'Awaiting deposit':o.payment_status!=='VERIFIED'?'Needs review':full?'Fully paid':collectionDue?'Balance due at collection':o.balance_requested_at&&Number(o.balance_due_cents)>0?'Awaiting balance':'Deposit verified';
+ const fulfilment=o.payment_status==='REFUNDED'?'Cancelled':o.fulfilled_at?full?(o.fulfilment_method==='delivery'?'Delivered':'Collected'):'Needs review':o.ready_at?full?'Ready':collectionDue?'Ready — balance due at collection':'Needs review':o.payment_status==='VERIFIED'?'Preparing':'Pending';
  // The persisted timestamp tracks fulfilment changes, not sync attempts or payment-only changes.
  // Existing pre-migration rows use known milestones; unknown cancellation time stays null.
  const changed=o.fulfilment_status_changed_at??(o.payment_status==='REFUNDED'?null:o.fulfilled_at??o.ready_at??(o.payment_status==='VERIFIED'?o.deposit_verified_at??null:o.created_at));

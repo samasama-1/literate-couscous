@@ -1,13 +1,17 @@
 'use server';
 
 import 'server-only';
+import {observeOperation} from '@/lib/operations/telemetry';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import crypto from 'crypto';
+import {COLLECTION_POLICY_VERSION} from '@/lib/collections/policy';
 import {orderDb} from '@/lib/orders/db';
 import { addressInput } from '@/lib/orders/validation';
 import { limitRequest } from '@/lib/campaigns/security';
 
 export async function joinGroupBuy(formData: {
+  policyAccepted?: boolean;
+  collectionPolicyVersion?: string;
   batchId: string;
   customerName: string;
   customerPhone: string;
@@ -18,7 +22,10 @@ export async function joinGroupBuy(formData: {
   postalCode: string;
   fulfilmentMethod: string;
 }) {
+ return observeOperation('registration',async()=>{
   if (!formData || typeof formData.customerName!=='string' || typeof formData.customerPhone!=='string' || typeof formData.customerEmail!=='string') return {error: 'Invalid order details.'};
+  const v2=process.env.FULFILMENT_V2_ENABLED==='true';
+  if(v2&&(formData.policyAccepted!==true||formData.collectionPolicyVersion!==COLLECTION_POLICY_VERSION))return {error:'Please read and accept the collection and delivery policy.'};
   let address;
   try { address=addressInput(formData); await limitRequest('order-registration',15); } catch(e) { return {error:e instanceof Error ? e.message : 'Please try again later.'}; }
   // 1. Validate and normalize inputs
@@ -43,8 +50,8 @@ export async function joinGroupBuy(formData: {
   const depositCents=Math.round(Number(batch.deposit_amount)*100)*quantity;
   if(!Number.isSafeInteger(depositCents) || depositCents<0) return {error:'Batch pricing is unavailable.'};
   const orderCode = `SAMA-${crypto.randomBytes(8).toString('hex').toUpperCase()}`;
-  const {data:registered,error:insertError}=await orderDb().rpc('register_batch_order',{p:{
-    order_code:orderCode,batch_id:batchId,customer_name:name,customer_phone:phone,customer_email:email,quantity,...address
+  const {data:registered,error:insertError}=await orderDb().rpc(v2?'register_batch_order_v2':'register_batch_order',{p:{
+    order_code:orderCode,batch_id:batchId,customer_name:name,customer_phone:phone,customer_email:email,quantity,...address,...(v2?{policy_accepted:true,collection_policy_version:COLLECTION_POLICY_VERSION}:{})
   }});
   if(insertError || !registered){
     if(insertError?.message.includes('ORDER_EXISTS') || insertError?.code==='23505') return {error:'An order already exists for these details. Use your saved order code or contact support.'};
@@ -63,4 +70,5 @@ export async function joinGroupBuy(formData: {
     orderCode: orderCode,
     depositCents: Number(registered.deposit_due_cents)
   };
+ });
 }

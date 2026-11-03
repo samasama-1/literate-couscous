@@ -1,8 +1,11 @@
+import {workerMetrics,observeQuery,observeOperation} from '../src/lib/operations/telemetry.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {randomUUID,createHash,createHmac} from 'node:crypto';
 import {PGlite} from '@electric-sql/pglite';
+import {productImage,COLLECTION_POLICY_TEXT} from '../src/lib/collections/policy.ts';
+import {collectionToken} from '../src/lib/collections/access.ts';
 import {sealLink,openLink} from '../src/lib/order-integrations/links.ts';
 import {emailStillRelevant,publicOrigin} from '../src/lib/order-integrations/policy.ts';
 import {handleWorker,scheduledInvocation} from '../src/lib/order-integrations/endpoint.ts';
@@ -21,11 +24,15 @@ test('encrypted payment tokens are bound to order/key/hash and mail eligibility 
  const token='b'.repeat(64),id=randomUUID(),hash=createHash('sha256').update(token).digest('hex');const envelope=sealLink(token,id,secret);
  assert.ok(!envelope.includes(token));assert.equal(openLink(envelope,id,hash,secret),token);
  for(const args of [[envelope,randomUUID(),hash,secret],[envelope,id,'c'.repeat(64),secret],[envelope,id,hash,'d'.repeat(64)],['bad',id,hash,secret]])assert.throws(()=>openLink(...args));
- const o={customer_email:'test@example.com',payment_status:'VERIFIED',deposit_verified_at:'2026-01-01',balance_token_hash:hash,balance_token_expires_at:'2099-01-01',balance_paid_at:null,ready_at:null,fulfilled_at:null,final_total_cents:10000,deposit_due_cents:5000,balance_due_cents:5000};
+ const o={fulfilment_method:'delivery',customer_email:'test@example.com',payment_status:'VERIFIED',deposit_verified_at:'2026-01-01',balance_token_hash:hash,balance_token_expires_at:'2099-01-01',balance_paid_at:null,ready_at:null,fulfilled_at:null,final_total_cents:10000,deposit_due_cents:5000,balance_due_cents:5000};
  const p={email:o.customer_email,balance_hash:hash};assert.equal(emailStillRelevant('balance_requested',p,o),true);
  for(const change of [{payment_status:'REFUNDED'},{customer_email:'other@example.com'},{balance_paid_at:'2026-01-01'},{balance_token_hash:'other'},{balance_token_expires_at:'2000-01-01'},{fulfilled_at:'2026-01-01'}])assert.equal(emailStillRelevant('balance_requested',p,{...o,...change}),false);
  assert.equal(emailStillRelevant('order_received',p,o),false);assert.equal(emailStillRelevant('ready',p,{...o,ready_at:'2026-01-01'}),false);
  assert.equal(emailStillRelevant('ready',p,{...o,ready_at:'2026-01-01',balance_paid_at:'2026-01-01'}),true);
+ assert.equal(emailStillRelevant('ready',{...p,method:'collection'},{...o,ready_at:'2026-01-01',balance_paid_at:'2026-01-01',fulfilment_method:'delivery'}),false);
+ const named={...o,ready_at:'2026-01-01T00:00:00Z',collection_access_version:2,fulfilment_method:'collection'};
+ assert.equal(emailStillRelevant('collector_changed',{...p,access_version:2,ready_at:'2026-01-01T00:00:00+00:00'},named),true);
+ assert.equal(emailStillRelevant('collection_access',{...p,access_version:1,ready_at:named.ready_at},named),false);
  assert.throws(()=>publicOrigin('https://user:pass@example.com'));assert.throws(()=>publicOrigin('http://example.com'));
 });
 test('CRM mapping excludes bank references, addresses and tokens; upserts by unique order and suppresses workflows',async()=>{
@@ -50,11 +57,11 @@ test('payment and fulfilment summaries retain website history without omitted CR
  const paid={...base,payment_status:'VERIFIED',deposit_verified_at:deposit,deposit_due_cents:5000};
  assert.equal(orderSummary(paid).payment,'Deposit verified');assert.equal(orderSummary(paid).fulfilment,'Preparing');
  const due={...paid,final_total_cents:10000,balance_due_cents:5000,balance_requested_at:ready};
- assert.equal(orderSummary(due).payment,'Awaiting balance');assert.equal(orderSummary(due).changed,'2026-10-20T02:00:00+00:00');
+ assert.equal(orderSummary(due).payment,'Balance due at collection');assert.equal(orderSummary(due).changed,'2026-10-20T02:00:00+00:00');
  const full={...due,balance_paid_at:ready};assert.equal(orderSummary(full).payment,'Fully paid');
  assert.equal(orderSummary({...paid,final_total_cents:5000,balance_due_cents:0}).payment,'Fully paid');
  assert.equal(orderSummary({...full,final_total_cents:1}).payment,'Awaiting balance');
- assert.equal(orderSummary({...due,ready_at:ready}).fulfilment,'Needs review');
+ assert.equal(orderSummary({...due,ready_at:ready}).fulfilment,'Ready — balance due at collection');
  assert.equal(orderSummary({...full,ready_at:ready}).fulfilment,'Ready');
  assert.equal(orderSummary({...full,fulfilled_at:fulfilled}).fulfilment,'Collected');
  assert.equal(orderSummary({...full,fulfilled_at:fulfilled,fulfilment_method:'delivery'}).fulfilment,'Delivered');
@@ -105,11 +112,15 @@ async function loadTs(relative,imports){
  vm.runInThisContext('(function(require,module,exports){'+code+'\n})')(name=>{if(name==='server-only')return {};assert.ok(name in imports,`Unexpected import ${name}`);return imports[name];},mod,mod.exports);return mod.exports;
 }
 test('actual email templates escape customer text and encrypt/decrypt private balance links without exposing them to CRM',async()=>{
- const {orderMessage}=await loadTs('../src/lib/order-integrations/messages.ts',{'./policy':{publicOrigin},'./links':{openLink}});
+ const {orderMessage}=await loadTs('../src/lib/order-integrations/messages.ts',{'./policy':{publicOrigin},'./links':{openLink},'../collections/policy':{productImage,COLLECTION_POLICY_TEXT}});
  const id=randomUUID(),token='b'.repeat(64),hash=createHash('sha256').update(token).digest('hex');
  const p={batch_id:randomUUID(),order_code:'SAMA-0123456789ABCDEF',name:'<script>bad</script>',email:'owner@example.com',quantity:1,deposit_cents:5000,balance_cents:1000,product:'Dryer',balance_hash:hash,link_envelope:sealLink(token,id,secret)};
  const pending=orderMessage('order_received',p,id,'https://example.com',secret);assert.match(pending.text,/not yet been verified/);assert.ok(!pending.html.includes('<script>'));assert.ok(pending.html.includes('&lt;script&gt;'));
  for(const event of ['order_received','deposit_received','balance_requested','balance_paid','ready']){const message=orderMessage(event,p,id,'https://example.com',secret);assert.ok(message.text.includes('Product: Dryer'));assert.ok(message.text.includes(`Batch ID: ${p.batch_id}`));assert.ok(message.text.includes(`https://example.com/group-buys/${p.batch_id}`));assert.ok(message.html.includes(`/group-buys/${p.batch_id}`));}
+ const collectionReady=orderMessage('ready',{...p,method:'collection',balance_cents:1000},id,'https://example.com',secret);assert.match(collectionReady.text,/S\$10.00, payable at collection/);assert.ok(!orderMessage('ready',{...p,method:'collection',balance_cents:0},id,'https://example.com',secret).text.includes('payable at collection'));
+ const collectorNotice=orderMessage('collector_changed',{...p,change:'authorised',collector_name:'<script>Collector</script>'},id,'https://example.com',secret);assert.ok(!collectorNotice.html.includes('<script>'));assert.match(collectorNotice.text,/original photo ID/);
+ const accessMail=orderMessage('collection_access',{...p,collection_url:'https://example.com/collection/OWNER-ONLY'},id,'https://example.com',secret);assert.match(accessMail.text,/24 hours/);assert.match(accessMail.text,/OWNER-ONLY/);
+ const illustrated=orderMessage('balance_requested',{...p,image_url:'/dryer.png'},id,'https://example.com',secret);assert.match(illustrated.html,/<img src="https:\/\/example.com\/dryer.png"/);assert.match(illustrated.text,/hello@samasama.sg/);assert.ok(!orderMessage('balance_requested',{...p,image_url:'javascript:alert(1)'},id,'https://example.com',secret).html.includes('<img'));
  assert.throws(()=>orderMessage('order_received',{...p,batch_id:'https://evil.example.com'},id,'https://example.com',secret),/INVALID_BATCH/);
  assert.ok(orderMessage('balance_requested',p,id,'https://example.com',secret).text.includes(`/balance/${token}`));
  assert.throws(()=>orderMessage('balance_requested',{...p,link_envelope:'bad'},id,'https://example.com',secret));
@@ -133,7 +144,7 @@ test('worker leases, pre-send retries, changed state, RPC failure and ambiguous 
  }return q;
  }};
  const {processOrderJobs}=await loadTs('../src/lib/order-integrations/worker.ts',{
- '@/lib/orders/db':{orderDb:()=>db},'@/lib/mail/config':{mailSendingConfig:()=>({})},
+ '@/lib/operations/telemetry':{workerMetrics,observeQuery,observeOperation},'@/lib/collections/access':{collectionToken},'@/lib/orders/db':{orderDb:()=>db},'@/lib/mail/config':{mailSendingConfig:()=>({})},
  '@/lib/mail/zoho-transport':{prepareZohoMail:async()=>{if(scenario==='preparation')throw Error('PRIVATE');return async()=>{sends++;if(scenario==='timeout')throw Error('PRIVATE');return '123';};}},
  './policy':{emailStillRelevant,publicOrigin},'./messages':{orderMessage:()=>({to:'owner@example.com',text:'Test'})},'./crm':{validateCrm:()=>{},prepareCrm:()=>{},crmRecord:()=>{}}
  });
@@ -144,6 +155,37 @@ test('worker leases, pre-send retries, changed state, RPC failure and ambiguous 
  if(['timeout','save_failure'].includes(scenario)){assert.equal(sends,1);assert.equal(job.status,'review');assert.equal(job.error_code,'PROVIDER_OUTCOME_UNCERTAIN');}
  if(scenario==='changed'){assert.equal(sends,0);assert.equal(job.status,'skipped');}
  if(scenario==='lost_marker')assert.equal(sends,0);
+ }
+ }finally{for(const k of Object.keys(process.env))if(!(k in previous))delete process.env[k];Object.assign(process.env,previous);}
+});
+
+test('V2 worker batches contexts, reuses invocation auth and never POSTs a deferred or changed job',async()=>{
+ const previous={...process.env};Object.assign(process.env,{ORDER_RUNTIME_V2:'true',ORDER_EMAIL_ENABLED:'true',ORDER_EMAIL_LINK_KEY:secret,NEXT_PUBLIC_SITE_URL:'https://example.com',FULFILMENT_V2_ENABLED:'false'});
+ try{
+ for(const scenario of ['allowed','deferred','changed','context_failure','unsupported']){
+ let sends=0,preparations=0,contexts=0,markers=0,metrics=0;const state=new Map();
+ const jobs=Array.from({length:2},()=>({id:randomUUID(),order_id:randomUUID(),kind:'email',event:scenario==='unsupported'?'owner_otp':'order_received',priority:1,payload:{email:'owner@example.com'},lease_token:randomUUID(),attempts:99,preparation_failures:0,status:'processing'}));
+ for(const j of jobs)state.set(j.id,j);
+ const order=j=>({id:j.order_id,batch_id:randomUUID(),customer_email:'owner@example.com',payment_status:'PENDING_PAYNOW',integration_revision:7});
+ const db={async rpc(name,args){
+ if(name==='claim_order_jobs_v2'){assert.equal(args.p_limit,10);return {data:jobs.map(j=>({...j}))};}
+ if(name==='order_job_contexts'){contexts++;assert.equal(args.p_claims.length,2);return scenario==='context_failure'?{error:{message:'PRIVATE'}}:{data:jobs.map(j=>({job_id:j.id,order:order(j),product:'Dryer'}))};}
+ if(name==='begin_order_job_send'){markers++;assert.equal(args.p_revision,7);assert.ok(state.has(args.p_id));return {data:scenario};}
+ if(name==='record_order_worker_metrics'){metrics++;return {};}
+ throw Error('Unexpected RPC '+name);
+ },from(table){let patch;const filters=[];const q={select(){return q;},update(v){patch=v;return q;},eq(k,v){filters.push([k,v]);return q;},async single(){assert.equal(table,'orders');return {data:order(jobs[0])};},async maybeSingle(){return apply();},then(resolve,reject){return Promise.resolve(apply()).then(resolve,reject);}};
+ function apply(){const j=state.get(filters.find(([k])=>k==='id')?.[1]);assert.ok(j);assert.ok(filters.every(([k,v])=>j[k]===v));Object.assign(j,patch);return {data:{id:j.id}};}return q;}};
+ const {processOrderJobs}=await loadTs('../src/lib/order-integrations/worker.ts',{
+ '@/lib/operations/telemetry':{workerMetrics,observeQuery},'@/lib/collections/access':{collectionToken},'@/lib/orders/db':{orderDb:()=>db},'@/lib/mail/config':{mailSendingConfig:()=>({})},
+ '@/lib/mail/zoho-transport':{prepareZohoMail:async()=>{preparations++;return async()=>{sends++;return '123';};}},
+ './policy':{emailStillRelevant,publicOrigin},'./messages':{orderMessage:()=>({to:'owner@example.com',text:'Test'})},'./crm':{validateCrm:()=>{},prepareCrm:()=>{},crmRecord:()=>{}}
+ });
+ await processOrderJobs('email');assert.equal(contexts,1);assert.equal(metrics,1);
+ if(scenario==='allowed'){assert.equal(sends,2);assert.equal(preparations,1);assert.ok(jobs.every(j=>j.status==='sent'));}
+ else assert.equal(sends,0);
+ if(scenario==='deferred'||scenario==='changed'){assert.equal(markers,2);assert.equal(preparations,1);assert.ok(jobs.every(j=>j.preparation_failures===0));}
+ if(scenario==='context_failure'){assert.equal(preparations,0);assert.ok(jobs.every(j=>j.status==='queued'&&j.preparation_failures===1));}
+ if(scenario==='unsupported')assert.ok(jobs.every(j=>j.status==='failed'&&j.error_code==='UNSUPPORTED_EVENT'));
  }
  }finally{for(const k of Object.keys(process.env))if(!(k in previous))delete process.env[k];Object.assign(process.env,previous);}
 });

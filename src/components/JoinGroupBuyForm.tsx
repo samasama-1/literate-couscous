@@ -2,16 +2,19 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import {COLLECTION_POLICY_TEXT,COLLECTION_POLICY_VERSION,DELIVERY_NOTICE} from '@/lib/collections/policy';
 import { joinGroupBuy } from '@/app/actions/join';
 
 interface Props {
+  collectionPolicyEnabled?: boolean;
   batchId: string;
   depositAmount: number;
   payment: {uen?: string;payee?: string;qr?: string;configured:boolean};
 }
 
-export default function JoinGroupBuyForm({ batchId, depositAmount, payment }: Props) {
+export default function JoinGroupBuyForm({ batchId, depositAmount, payment, collectionPolicyEnabled=false }: Props) {
   const [formData, setFormData] = useState({ name: '', countryCode: '+65', phone: '', email: '', quantity: 1, addressLine1: '', addressLine2: '', postalCode: '', fulfilmentMethod: 'collection' });
+  const [policyAccepted,setPolicyAccepted]=useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -32,7 +35,8 @@ export default function JoinGroupBuyForm({ batchId, depositAmount, payment }: Pr
       addressLine1: formData.addressLine1,
       addressLine2: formData.addressLine2,
       postalCode: formData.postalCode,
-      fulfilmentMethod: formData.fulfilmentMethod
+      fulfilmentMethod: formData.fulfilmentMethod,
+      policyAccepted,collectionPolicyVersion:COLLECTION_POLICY_VERSION
     });
 
     if (res.error) {
@@ -148,7 +152,8 @@ export default function JoinGroupBuyForm({ batchId, depositAmount, payment }: Pr
           <label style={{display:'block',marginBottom:12}}>Street / block and building *<input autoComplete="address-line1" required maxLength={200} value={formData.addressLine1} onChange={e=>setFormData({...formData,addressLine1:e.target.value})} style={{display:'block',width:'100%',padding:12}}/></label>
           <label style={{display:'block',marginBottom:12}}>Unit number (if applicable)<input autoComplete="address-line2" maxLength={100} value={formData.addressLine2} onChange={e=>setFormData({...formData,addressLine2:e.target.value})} style={{display:'block',width:'100%',padding:12}}/></label>
           <label style={{display:'block',marginBottom:12}}>Singapore postal code *<input autoComplete="postal-code" required inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={formData.postalCode} onChange={e=>setFormData({...formData,postalCode:e.target.value.replace(/\D/g,'')})} style={{display:'block',padding:12}}/></label>
-          <label>Preferred fulfilment<select value={formData.fulfilmentMethod} onChange={e=>setFormData({...formData,fulfilmentMethod:e.target.value})} style={{display:'block',padding:12}}><option value="collection">Self-collection</option><option value="delivery">Delivery (subject to confirmation)</option></select></label>
+          <label>Preferred fulfilment<select value={formData.fulfilmentMethod} onChange={e=>setFormData({...formData,fulfilmentMethod:e.target.value})} style={{display:'block',padding:12}}><option value="collection">Self-collection</option><option value="delivery">{DELIVERY_NOTICE}</option></select></label>
+          {formData.fulfilmentMethod==='delivery'&&<p role="status">Delivery is a request, not a confirmed booking. We will confirm availability and agree any additional charges with you before arranging delivery.</p>}
           <p>Used for order fulfilment. <a href="/privacy">Privacy policy</a></p>
         </fieldset>
 
@@ -172,6 +177,7 @@ export default function JoinGroupBuyForm({ batchId, depositAmount, payment }: Pr
           </div>
         </div>
 
+        {collectionPolicyEnabled&&<label><input type="checkbox" required checked={policyAccepted} onChange={e=>setPolicyAccepted(e.target.checked)}/> I agree to the <a href="/collection-delivery" target="_blank" rel="noreferrer">collection and delivery policy</a>. {COLLECTION_POLICY_TEXT}</label>}
         <button 
           type="submit" 
           disabled={loading}

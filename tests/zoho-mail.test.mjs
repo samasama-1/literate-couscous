@@ -99,11 +99,11 @@ test('Mail setup response is admin-only, private, framed off, and returns only t
 });
 
 const now=Date.parse('2026-10-20T09:00:00Z');
-function deliveryHarness({provider='zoho',job={},prepareFails=false,sendFails=false,saveFails=false,markerFails=false}={}){
+function deliveryHarness({provider='zoho',job={},prepareFails=false,sendFails=false,saveFails=false,markerFails=false,markerDeferred=false}={}){
  let current={id:'JOB',status:'queued',attempted_at:null,provider:'resend',metadata:{product_name:'Test'},...job},sends=0,prepares=0;
  const same=x=>current.status===x.status&&current.attempted_at===x.attempted_at;
  const store={claim:async(expected,at,p,m)=>{if(!same(expected))return false;current={...current,status:'sending',attempted_at:at,provider:p,metadata:m};return true;},
-  markSending:async(at,m)=>{if(markerFails||current.status!=='sending'||current.attempted_at!==at)return false;current.metadata=m;return true;},
+  markSending:async(at,m)=>{if(markerDeferred)return 'deferred';if(markerFails||current.status!=='sending'||current.attempted_at!==at)return false;current.metadata=m;return true;},
   finish:async(at,patch)=>{if(saveFails||current.status!=='sending'||current.attempted_at!==at)return false;current={...current,...patch};return true;},
   block:async(expected,m)=>{if(same(expected))current.error_message=m;}};
  const run=()=>deliverOnce({job:structuredClone(current),provider,store,now:()=>now,buildMessage:()=>message,prepare:async()=>{prepares++;if(prepareFails)throw Error('PRIVATE_TOKEN');return async()=>{sends++;if(sendFails)throw Error('PRIVATE_BODY');return 'MSG123';};}});
@@ -153,7 +153,7 @@ test('campaign adapter keeps sending off until configured and persists Zoho prov
    assert.ok(['email_deliveries','funnel_events'].includes(table));return chain;}};
   const adapterModule={exports:{}};
   const imports={
-   'server-only':{},'@/lib/supabaseAdmin':{supabaseAdmin:db},'./utils':{formatMoney:n=>'S$'+(n/100).toFixed(2)},'./security':{unsubscribeToken:()=> 'SIGNED_TOKEN'},'./types':{purchaseIntentLabels:{yes:'Yes, I’m interested',no:'No, I’m just voting'}},
+   'server-only':{},'@/lib/orders/db':{orderDb:()=>db},'@/lib/supabaseAdmin':{supabaseAdmin:db},'./utils':{formatMoney:n=>'S$'+(n/100).toFixed(2)},'./security':{unsubscribeToken:()=> 'SIGNED_TOKEN'},'./types':{purchaseIntentLabels:{yes:'Yes, I’m interested',no:'No, I’m just voting'}},
    '@/lib/mail/config':{mailSendingConfig:()=>config},'@/lib/mail/zoho-transport':{prepareZohoMail:async()=>{prepared++;return async m=>{sends++;lastMessage=m;return 'MSG123';};}},'@/lib/mail/delivery':{deliverOnce},
   };
   const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
@@ -166,4 +166,8 @@ test('campaign adapter keeps sending off until configured and persists Zoho prov
   assert.equal(current.metadata._mail_outcome,'accepted');assert.ok(lastMessage.html.includes('Dryer &lt;test&gt;'));assert.ok(lastMessage.html.includes('/unsubscribe?token=SIGNED_TOKEN'));assert.ok(lastMessage.text.includes('not an order or payment'));
   assert.equal(events[0].event_type,'confirmation_email_sent');assert.equal(await run(),'sent');assert.equal(sends,1);
  } finally {for(const k of vars){if(saved[k]===undefined)delete process.env[k];else process.env[k]=saved[k];}}
+});
+
+test('provider budget deferral queues a known-unsent confirmation without making a send POST',async()=>{
+ const h=deliveryHarness({markerDeferred:true});assert.equal(await h.run(),'queued');assert.equal(h.stats().sends,0);assert.equal(h.current().status,'queued');assert.equal(h.current().metadata._mail_outcome,'not_sent');
 });

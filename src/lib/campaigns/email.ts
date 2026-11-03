@@ -1,4 +1,5 @@
 import 'server-only';
+import {orderDb} from '@/lib/orders/db';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { formatMoney } from './utils';
 import { unsubscribeToken } from './security';
@@ -34,6 +35,10 @@ export async function deliverConfirmation(id: string): Promise<'sent'|'queued'|'
       return !!result.data;
     },
     async markSending(at, metadata) {
+      if(provider==='zoho'&&process.env.ORDER_RUNTIME_V2==='true'){
+        const {data,error}=await orderDb().rpc('begin_campaign_mail_send',{p_id:id,p_attempted_at:at});
+        return error?false:data==='deferred'?'deferred':data==='allowed';
+      }
       const result = await supabaseAdmin.from('email_deliveries').update({metadata:metadata as Json}).eq('id',id).eq('status','sending').eq('attempted_at',at).select('id').maybeSingle();
       return !result.error && !!result.data;
     },

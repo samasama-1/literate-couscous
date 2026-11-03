@@ -75,7 +75,7 @@ export async function lookupOrder(orderId: string, authValue: string) {
     target_capacity: batch.target_capacity,
     remaining_capacity: batch.remaining_capacity,
     closes_at: batch.closes_at,
-    support_cta: 'Need help? Email us at support@samasama.com or reply to your confirmation message.'
+    support_cta: 'Need help? Email us at hello@samasama.sg or reply to your confirmation message.'
   };
 
   return { data: safePayload };
