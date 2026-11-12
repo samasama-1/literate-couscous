@@ -3,7 +3,7 @@ import Link from 'next/link';
 import {signOut} from '@/app/actions/auth';
 import styles from './workspace.module.css';
 
-export default function AdminWorkspace({children, collection = false, section = 'orders'}: {children: ReactNode; collection?: boolean; section?: 'orders' | 'batches' | 'delivery' | 'safety' | 'operations'}) {
+export default function AdminWorkspace({children, collection = false, section = 'orders'}: {children: ReactNode; collection?: boolean; section?: 'orders' | 'batches' | 'delivery' | 'safety' | 'operations' | 'discounts'}) {
   return <div className={styles.workspace}>
     <aside className={styles.sidebar}>
       <Link href="/admin" className={styles.brand}>SamaSama<span className={styles.brandSmall}>OPERATIONS</span></Link>
@@ -13,6 +13,7 @@ export default function AdminWorkspace({children, collection = false, section = 
         <Link href="/admin?mode=collection" className={collection ? styles.activeNav : undefined} aria-current={collection ? 'page' : undefined}><span aria-hidden="true">✓</span> Collection desk</Link>
         <Link href="/admin/batches" className={section === 'batches' ? styles.activeNav : undefined} aria-current={section === 'batches' ? 'page' : undefined}><span aria-hidden="true">▦</span> Batches</Link>
         <Link href="/admin/delivery-payments" className={section==='delivery'?styles.activeNav:undefined} aria-current={section==='delivery'?'page':undefined}><span aria-hidden="true">✉</span> Delivery balance emails</Link>
+        <Link href="/admin/discounts" className={section==='discounts'?styles.activeNav:undefined} aria-current={section==='discounts'?'page':undefined}><span aria-hidden="true">％</span> Campaign discounts</Link>
         <Link href="/admin/storage-safety" className={section==='safety'?styles.activeNav:undefined} aria-current={section==='safety'?'page':undefined}><span aria-hidden="true">◇</span> Storage safety</Link>
         <Link href="/admin/operations" className={section==='operations'?styles.activeNav:undefined} aria-current={section==='operations'?'page':undefined}><span aria-hidden="true">◷</span> Operations health</Link>
         <Link href="/admin/campaigns"><span aria-hidden="true">◉</span> Campaign leads</Link>
@@ -25,7 +26,7 @@ export default function AdminWorkspace({children, collection = false, section = 
       </div>
     </aside>
     <div className={styles.main}>
-      <div className={styles.topbar}><span>Workspace <span aria-hidden="true">/</span> <strong>{section === 'safety' ? 'Storage safety' : section === 'operations' ? 'Operations health' : section === 'delivery' ? 'Delivery balance emails' : section === 'batches' ? 'Batches' : collection ? 'Collection desk' : 'Orders'}</strong></span><span className={styles.adminIndicator}><i aria-hidden="true"/>Admin workspace</span></div>
+      <div className={styles.topbar}><span>Workspace <span aria-hidden="true">/</span> <strong>{section === 'discounts' ? 'Campaign discounts' : section === 'safety' ? 'Storage safety' : section === 'operations' ? 'Operations health' : section === 'delivery' ? 'Delivery balance emails' : section === 'batches' ? 'Batches' : collection ? 'Collection desk' : 'Orders'}</strong></span><span className={styles.adminIndicator}><i aria-hidden="true"/>Admin workspace</span></div>
       <div className={styles.content}>{children}</div>
     </div>
   </div>;

@@ -1,3 +1,4 @@
+import {orderDb} from '@/lib/orders/db';
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
@@ -66,5 +67,6 @@ export default async function CampaignPage({ params }: PageProps) {
 
   const { campaign, products } = data;
 
-  return <CampaignLanding campaign={campaign} products={products} />;
+  const offer=process.env.CAMPAIGN_DISCOUNTS_INSTALLED==='true'&&!campaign.is_test?await orderDb().rpc('campaign_discount_offer'):{data:false};
+  return <CampaignLanding discountOffer={offer.data===true} campaign={campaign} products={products} />;
 }

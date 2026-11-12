@@ -153,7 +153,7 @@ test('campaign adapter keeps sending off until configured and persists Zoho prov
    assert.ok(['email_deliveries','funnel_events'].includes(table));return chain;}};
   const adapterModule={exports:{}};
   const imports={
-   'server-only':{},'@/lib/orders/db':{orderDb:()=>db},'@/lib/supabaseAdmin':{supabaseAdmin:db},'./utils':{formatMoney:n=>'S$'+(n/100).toFixed(2)},'./security':{unsubscribeToken:()=> 'SIGNED_TOKEN'},'./types':{purchaseIntentLabels:{yes:'Yes, I’m interested',no:'No, I’m just voting'}},
+   'server-only':{},'@/lib/discounts/codes':{revealDiscountCode:()=>{throw Error('Not used for non-discount mail');}},'@/lib/orders/db':{orderDb:()=>db},'@/lib/supabaseAdmin':{supabaseAdmin:db},'./utils':{formatMoney:n=>'S$'+(n/100).toFixed(2)},'./security':{unsubscribeToken:()=> 'SIGNED_TOKEN'},'./types':{purchaseIntentLabels:{yes:'Yes, I’m interested',no:'No, I’m just voting'}},
    '@/lib/mail/config':{mailSendingConfig:()=>config},'@/lib/mail/zoho-transport':{prepareZohoMail:async()=>{prepared++;return async m=>{sends++;lastMessage=m;return 'MSG123';};}},'@/lib/mail/delivery':{deliverOnce},
   };
   const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;

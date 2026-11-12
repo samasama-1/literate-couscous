@@ -30,9 +30,9 @@ export async function lookupOrder(orderId: string, authValue: string) {
   // 1. Fetch the order securely bypassing RLS
   const { data: order, error: orderError } = await supabaseAdmin
     .from('orders')
-    .select('payment_status,quantity,batch_id,customer_phone,customer_email')
+    .select('payment_status,quantity,batch_id,customer_phone,customer_email'+(process.env.CAMPAIGN_DISCOUNTS_INSTALLED==='true'?',cancelled_at':''))
     .eq('order_code', cleanOrderId)
-    .single();
+    .single<{payment_status:string;quantity:number;batch_id:string;customer_phone:string|null;customer_email:string|null;cancelled_at?:string|null}>();
 
   if (orderError || !order) {
     return { error: GENERIC_ERROR };
@@ -47,6 +47,7 @@ export async function lookupOrder(orderId: string, authValue: string) {
     return { error: GENERIC_ERROR };
   }
 
+  if((order as {cancelled_at?:string|null}).cancelled_at)return {error:'This order was cancelled. Contact hello@samasama.sg before making any payment.'};
   // 3. Fetch batch progress safely
   const { data: batch, error: batchError } = await supabaseAdmin
     .from('batch_progress_view')

@@ -15,6 +15,7 @@ declare global {
 }
 
 type Props = {
+  discountOffer?:boolean;
   preview?: boolean;
   campaign: Campaign;
   products: CampaignProduct[];
@@ -60,7 +61,7 @@ async function recordEvent(eventType: string, campaignId: string, anonymousSessi
   }).catch(() => undefined);
 }
 
-export default function CampaignIntentForm({ campaign, products, metaPixelEnabled, tiktokPixelEnabled, preview = false }: Props) {
+export default function CampaignIntentForm({discountOffer=false, campaign, products, metaPixelEnabled, tiktokPixelEnabled, preview = false }: Props) {
   const [selectedProductId, setSelectedProductId] = useState("");
   // Registering a selected product expresses interest; marketing consent stays separate.
   const intent: PurchaseIntent = "yes";
@@ -175,6 +176,7 @@ export default function CampaignIntentForm({ campaign, products, metaPixelEnable
           {campaign.confirmation_text || "We'll let you know how the vote develops. If this product moves forward, you'll get first access to the Founding Buyer offer."}
         </p>
         {state.emailStatus === "test" ? <p className="campaign-note">{preview ? "Preview complete. Nothing was saved and no email was sent." : "This is a test registration. No confirmation email was sent."}</p> : state.emailStatus !== "sent" && <p className="campaign-note">Your pick is saved. Your confirmation email has not been sent yet.</p>}
+        {discountOffer&&!preview&&<p>Eligible new registrations receive their personal reward code in the confirmation email. Check your inbox and spam folder; repeat registrations do not create a new code.</p>}
         {!preview && <p>Product and launch updates are sent only if you opted in.</p>}
         <Link className="btn btn-secondary" href="/">
           Back to SamaSama
@@ -235,6 +237,7 @@ export default function CampaignIntentForm({ campaign, products, metaPixelEnable
         <section ref={intentRef} className="campaign-shell campaign-intent">
           <p className="section-label">Product interest</p>
           <h2>Register your interest in {selectedProduct.public_name}</h2>
+          {discountOffer&&!preview&&<p className="campaign-note">New interested registrants receive a personal first-order code by email: S$10 off each unit, up to 10 units, on any product priced at S$50 or more per unit before discount. Valid for six calendar months from issue. The deposit is unchanged; the discount reduces the final balance.</p>}
           <p>Submitting your pick tells us you’re interested in this product and helps us decide what to bring in next. No purchase or payment is required.</p>
 
           <div className="campaign-contact-grid">

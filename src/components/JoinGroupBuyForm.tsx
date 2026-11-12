@@ -7,13 +7,16 @@ import { joinGroupBuy } from '@/app/actions/join';
 
 interface Props {
   collectionPolicyEnabled?: boolean;
+  discountEnabled?: boolean;
   batchId: string;
   depositAmount: number;
   payment: {uen?: string;payee?: string;qr?: string;configured:boolean};
 }
 
-export default function JoinGroupBuyForm({ batchId, depositAmount, payment, collectionPolicyEnabled=false }: Props) {
+export default function JoinGroupBuyForm({ batchId, depositAmount, payment, collectionPolicyEnabled=false, discountEnabled=false }: Props) {
   const [formData, setFormData] = useState({ name: '', countryCode: '+65', phone: '', email: '', quantity: 1, addressLine1: '', addressLine2: '', postalCode: '', fulfilmentMethod: 'collection' });
+  const [discountCode,setDiscountCode]=useState('');
+  const [savedDiscount,setSavedDiscount]=useState(0);
   const [policyAccepted,setPolicyAccepted]=useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -27,7 +30,7 @@ export default function JoinGroupBuyForm({ batchId, depositAmount, payment, coll
     setError('');
 
     const res = await joinGroupBuy({
-      batchId,
+      batchId,discountCode:discountEnabled?discountCode:undefined,
       customerName: formData.name,
       customerPhone: `${formData.countryCode}${formData.phone}`,
       customerEmail: formData.email,
@@ -45,6 +48,7 @@ export default function JoinGroupBuyForm({ batchId, depositAmount, payment, coll
     } else if (res.success && res.orderCode) {
       setOrderCode(res.orderCode);
       setSavedDeposit(res.depositCents ?? null);
+      setSavedDiscount(res.discountCents||0);
       setSuccess(true);
       setLoading(false);
     }
@@ -58,6 +62,7 @@ export default function JoinGroupBuyForm({ batchId, depositAmount, payment, coll
           Please complete your deposit of <strong style={{ color: "var(--color-primary)" }}>${((savedDeposit ?? Math.round(depositAmount*100)*formData.quantity)/100).toFixed(2)}</strong> via PayNow to officially lock in your spot.
         </p>
         
+        {savedDiscount>0&&<p>Campaign discount reserved: S${(savedDiscount/100).toFixed(2)} across {formData.quantity} unit(s). It reduces the final balance after the qualifying price is confirmed. Your deposit is unchanged.</p>}
         {/* Order Code Display */}
         <div style={{ background: "var(--color-primary)", color: "white", padding: "1.5rem", borderRadius: "var(--radius-md)", marginBottom: "2rem", display: "inline-block" }}>
           <p style={{ fontSize: "0.875rem", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.5rem", opacity: 0.9 }}>Your Order Code</p>
@@ -177,6 +182,7 @@ export default function JoinGroupBuyForm({ batchId, depositAmount, payment, coll
           </div>
         </div>
 
+        {discountEnabled&&<label style={{display:'block'}}>Campaign discount code (optional)<input value={discountCode} onChange={e=>setDiscountCode(e.target.value)} maxLength={100} autoComplete="off" placeholder="Paste your personal SAMA10- code" style={{display:'block',width:'100%',padding:12}}/><small>{discountCode.trim()?`Requested discount: S$${(formData.quantity*10).toFixed(2)} across ${formData.quantity} unit(s), checked when you save the order. `:''}S$10 off each unit, up to 10 units. Product price must be at least S$50 per unit before discount. Use your registration email. Your deposit stays unchanged.</small></label>}
         {collectionPolicyEnabled&&<label><input type="checkbox" required checked={policyAccepted} onChange={e=>setPolicyAccepted(e.target.checked)}/> I agree to the <a href="/collection-delivery" target="_blank" rel="noreferrer">collection and delivery policy</a>. {COLLECTION_POLICY_TEXT}</label>}
         <button 
           type="submit" 

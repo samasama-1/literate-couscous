@@ -40,7 +40,7 @@ export default async function JoinPage({ params }: { params: Promise<{ id: strin
         </p>
       </div>
 
-      <JoinGroupBuyForm collectionPolicyEnabled={process.env.FULFILMENT_V2_ENABLED==='true'} batchId={batch.batch_id} depositAmount={batch.deposit_amount} payment={paymentConfig()} />
+      <JoinGroupBuyForm discountEnabled={process.env.CAMPAIGN_DISCOUNTS_INSTALLED==='true'} collectionPolicyEnabled={process.env.FULFILMENT_V2_ENABLED==='true'} batchId={batch.batch_id} depositAmount={batch.deposit_amount} payment={paymentConfig()} />
     </div>
   );
 }

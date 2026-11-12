@@ -26,6 +26,15 @@ Local implementation: [manual-balance-rollout.md](manual-balance-rollout.md). Se
 - [ ] Complete collection payment → authorization/storage → single handover acceptance, and delivery preview → manual queue → verified payment → delivery acceptance.
 - [ ] Finalize delivery-only balance email wording and the collection-ready pay-at-collection notice; test an approved inbox and existing prepaid orders.
 
+## Campaign reward — 10 November 2026
+
+[Discount setup and rules](campaign-discounts-setup.md): personal code for any product on the first order, S$10 per unit (up to the existing ten-unit checkout), final product price at least S$50, original six-calendar-month validity, no retroactive awards and admin-approved reinstatement. Deposit unchanged; actual discounted funds govern refunds. Existing one-product/batch checkout only.
+
+- [ ] Review/install the new discount SQL and compatible server setting; issuance defaults off. Do not change previous fee-off controls.
+- [ ] Approve the campaign offer and confirmation-email copy, then explicitly enable new issuance in Campaign discounts.
+- [ ] Verify controlled registration email → same-email code use → verified deposit → per-unit final quote → collection or manual delivery balance email. Check expiry, duplicate attempts, cancellation and discounted refund reconciliation.
+- [ ] Resolve the existing known-unsent campaign confirmation retry/ownership work and provider capacity before public registration; this feature adds no new mail drain or reminder schedule.
+
 ## Confirmed decisions
 
 - Commercial policy approved for now: seven free days, then S$10 per order per commenced seven-day period, uncapped; discretionary adjustments are audited. After the two additional weeks, cancellation/resale is a **manual review**, not automatic forfeiture or disposal. Preserve accepted policy versions when later changing terms.

@@ -1,6 +1,7 @@
 export type Event = 'order_received'|'deposit_received'|'balance_requested'|'balance_paid'|'ready';
-export type OrderState = {customer_email:string|null;payment_status:string;deposit_verified_at:string|null;balance_token_hash:string|null;balance_token_expires_at:string|null;balance_paid_at:string|null;ready_at:string|null;fulfilled_at:string|null;final_total_cents:number|null;deposit_due_cents:number|null;balance_due_cents:number|null;collection_access_version?:number;fulfilment_method?:string};
+export type OrderState = {cancelled_at?:string|null;customer_email:string|null;payment_status:string;deposit_verified_at:string|null;balance_token_hash:string|null;balance_token_expires_at:string|null;balance_paid_at:string|null;ready_at:string|null;fulfilled_at:string|null;final_total_cents:number|null;deposit_due_cents:number|null;balance_due_cents:number|null;collection_access_version?:number;fulfilment_method?:string};
 export function emailStillRelevant(event:string,payload:Record<string,unknown>,o:OrderState,now=Date.now(),manualBalances=false) {
+ if(o.cancelled_at)return false;
  if(!o.customer_email || o.customer_email!==payload.email || o.payment_status==='REFUNDED') return false;
  if(event==='collection_access'||event==='collector_changed')return o.payment_status==='VERIFIED'&&!!o.ready_at&&!o.fulfilled_at&&o.fulfilment_method==='collection'&&o.collection_access_version===payload.access_version&&Date.parse(o.ready_at)===Date.parse(String(payload.ready_at));
  if(event==='order_received') return o.payment_status==='PENDING_PAYNOW';

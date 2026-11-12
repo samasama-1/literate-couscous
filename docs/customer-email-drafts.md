@@ -52,3 +52,7 @@ Named-collector update: the collection-ready email now includes the owner-only a
 ## Manual balance routing update — 27 October 2026
 
 The current approved flow supersedes earlier general balance-request briefs: self-collection customers pay their remaining balance at collection. The collection-ready email may state the amount due at the desk; it must not demand payment again if already settled. Delivery customers alone receive balance requests, explicitly previewed and queued by admins; no automatic request or balance reminder is added. Keep product/image, batch, quantity, final total, verified deposit, remaining balance, private payment link and support in the delivery draft. Final content is still pending Marcus’s review. See [manual-balance-rollout.md](manual-balance-rollout.md).
+
+## Campaign reward confirmation update — 10 November 2026
+
+The prepared campaign acknowledgement includes the personal reward only for newly eligible registrations: S$10 per unit (up to ten), any product at least S$50 per unit before discount, first paid order, six calendar months from issue. The deposit is unchanged. Codes are private and email-bound, not returned on the public success page. Review final copy/terms and an approved owned-inbox send before activation. No separate reward email or automatic reminder schedule was added. See [campaign-discounts-setup.md](campaign-discounts-setup.md).

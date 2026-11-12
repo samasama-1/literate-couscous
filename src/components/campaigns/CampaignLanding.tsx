@@ -2,7 +2,7 @@ import AnalyticsPixels from "@/components/AnalyticsPixels";
 import { campaignIsOpen } from "@/lib/campaigns/utils";
 import type { Campaign, CampaignProduct } from "@/lib/campaigns/types";
 import CampaignIntentForm from "@/app/campaign/[slug]/CampaignIntentForm";
-export default function CampaignLanding({campaign,products,preview=false}:{campaign:Campaign;products:CampaignProduct[];preview?:boolean}) {
+export default function CampaignLanding({campaign,products,preview=false,discountOffer=false}:{campaign:Campaign;products:CampaignProduct[];preview?:boolean;discountOffer?:boolean}) {
   const isOpen = preview || campaignIsOpen(campaign);
   return (
     <>
@@ -89,6 +89,7 @@ export default function CampaignLanding({campaign,products,preview=false}:{campa
             </section>
           ) : (
             <CampaignIntentForm
+              discountOffer={discountOffer}
               campaign={campaign}
               products={products}
               metaPixelEnabled={!preview && !campaign.is_test && Boolean(process.env.NEXT_PUBLIC_META_PIXEL_ID)}

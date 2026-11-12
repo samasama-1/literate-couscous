@@ -42,7 +42,7 @@ export async function processOrderJobs(kind:'email'|'crm') {
    if(kind==='email'&&job.event==='collection_access'&&!collectionEnabled){await finish('skipped','DELEGATION_PAUSED');continue;}
    // Fetch only operational fields; addresses and bank references never enter this worker.
    const context=contexts.find(c=>c.job_id===job.id);
-   const {data:o,error:readError}=runtimeV2?{data:context?.order,error:contextResult?.error}:await db.from('orders').select('id,order_code,batch_id,customer_name,customer_email,customer_phone,quantity,payment_status,deposit_due_cents,deposit_verified_at,final_total_cents,balance_due_cents,balance_token_hash,balance_token_expires_at,balance_requested_at,balance_paid_at,ready_at,fulfilled_at,fulfilment_method,created_at,fulfilment_status_changed_at'+(authInstalled?',collection_access_version':'')).eq('id',job.order_id).single<WorkerOrder>();
+   const {data:o,error:readError}=runtimeV2?{data:context?.order,error:contextResult?.error}:await db.from('orders').select('id,order_code,batch_id,customer_name,customer_email,customer_phone,quantity,payment_status,deposit_due_cents,deposit_verified_at,final_total_cents,balance_due_cents,balance_token_hash,balance_token_expires_at,balance_requested_at,balance_paid_at,ready_at,fulfilled_at,fulfilment_method,created_at,fulfilment_status_changed_at'+(authInstalled?',collection_access_version':'')+(process.env.CAMPAIGN_DISCOUNTS_INSTALLED==='true'?',cancelled_at':'')).eq('id',job.order_id).single<WorkerOrder>();
    if(readError||!o)throw Error('ORDER_READ_FAILED');
    if(kind==='email'&&!emailStillRelevant(job.event,job.payload,o,Date.now(),manualBalances)){await finish('skipped','NO_LONGER_RELEVANT');continue;}
    let productName='',imageUrl:unknown=null,collectionUrl:string|undefined,collectionPolicy=false;
@@ -63,12 +63,12 @@ export async function processOrderJobs(kind:'email'|'crm') {
    }
    const sendMail=kind==='email'?(mailSender??=await prepareZohoMail(mailSendingConfig())):null;
    const sendCrm=kind==='crm'?(crmSender??=await prepareCrm(crm)):null;
-   const crmPayload=kind==='crm'?crmRecord(o):null;
    // Recheck state after network preparation; fail closed on a changed order.
-   const {data:latest,error:latestError}=await db.from('orders').select('customer_email,payment_status,deposit_verified_at,balance_token_hash,balance_token_expires_at,balance_paid_at,ready_at,fulfilled_at,final_total_cents,deposit_due_cents,balance_due_cents,fulfilment_method'+(authInstalled?',collection_access_version':'')).eq('id',job.order_id).single<WorkerOrder>();
+   const {data:latest,error:latestError}=await db.from('orders').select('customer_email,payment_status,deposit_verified_at,balance_token_hash,balance_token_expires_at,balance_paid_at,ready_at,fulfilled_at,final_total_cents,deposit_due_cents,balance_due_cents,fulfilment_method'+(authInstalled?',collection_access_version':'')+(process.env.CAMPAIGN_DISCOUNTS_INSTALLED==='true'?',cancelled_at':'')).eq('id',job.order_id).single<WorkerOrder>();
    if(latestError||!latest)throw Error('ORDER_READ_FAILED');
    if(kind==='email'&&!emailStillRelevant(job.event,job.payload,latest,Date.now(),manualBalances)){await finish('skipped','NO_LONGER_RELEVANT');continue;}
    if(kind==='email'&&collectionUrl){const boundVersion=runtimeV2?context?.order.collection_access_version:(parseInt(String(o.collection_access_version),10)||1);if(latest.collection_access_version!==boundVersion||latest.fulfilment_method!=='collection'){await finish('skipped','COLLECTION_ACCESS_CHANGED');continue;}}
+   const crmPayload=kind==='crm'?crmRecord({...o,...latest}):null;
    const message=kind==='email'?orderMessage(job.event,{...job.payload,...(job.event==='ready'?{balance_cents:latest.balance_paid_at?0:latest.balance_due_cents}:{}),product:productName,image_url:imageUrl,batch_id:o.batch_id,collection_url:collectionUrl,collection_policy:collectionPolicy},job.order_id,origin,process.env.ORDER_EMAIL_LINK_KEY||''):null;
    const {data:marker,error:markerError}=runtimeV2?await db.rpc('begin_order_job_send',{p_id:job.id,p_lease:job.lease_token,p_revision:context?.order.integration_revision}):await db.from('order_integration_jobs').update({send_started_at:new Date().toISOString()}).eq('id',job.id).eq('status','processing').eq('lease_token',job.lease_token).is('send_started_at',null).select('id').maybeSingle();
    if(markerError)throw Error('SEND_MARKER_FAILED');

@@ -1,5 +1,7 @@
 'use server';
 import 'server-only';
+import {orderDb} from '@/lib/orders/db';
+import {prepareDiscountCode} from '@/lib/discounts/codes';
 import { after } from 'next/server';
 import { syncCampaignContact } from '@/lib/campaigns/zoho-sync';
 import { revalidatePath } from 'next/cache';
@@ -16,7 +18,9 @@ export async function submitCampaignIntent(value: unknown) {
     const session = await campaignSession(true);
     await limitRequest('registration',30);
     await limitRequest('registration-email',6,600,input.email);
-    const {data,error} = await supabaseAdmin.rpc('register_campaign_intent',{p:{...input,session_id:session}});
+    const discounts=process.env.CAMPAIGN_DISCOUNTS_INSTALLED==='true';
+    const candidate=discounts?prepareDiscountCode(process.env.ORDER_EMAIL_LINK_KEY||''):null;
+    const {data,error} = discounts?await orderDb().rpc('register_campaign_intent_discount',{p:{...input,session_id:session},p_coupon:candidate}):await supabaseAdmin.rpc('register_campaign_intent',{p:{...input,session_id:session}});
     if (error) {
       const messages: Record<string,string> = {
         PRICE_CHANGED:'The estimated price changed. Refresh the page and confirm your pick at the new price.',

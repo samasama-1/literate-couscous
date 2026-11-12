@@ -1,6 +1,7 @@
 'use server';
 
 import 'server-only';
+import {discountCodeHash} from '@/lib/discounts/codes';
 import {observeOperation} from '@/lib/operations/telemetry';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import crypto from 'crypto';
@@ -10,6 +11,7 @@ import { addressInput } from '@/lib/orders/validation';
 import { limitRequest } from '@/lib/campaigns/security';
 
 export async function joinGroupBuy(formData: {
+  discountCode?: string;
   policyAccepted?: boolean;
   collectionPolicyVersion?: string;
   batchId: string;
@@ -50,10 +52,16 @@ export async function joinGroupBuy(formData: {
   const depositCents=Math.round(Number(batch.deposit_amount)*100)*quantity;
   if(!Number.isSafeInteger(depositCents) || depositCents<0) return {error:'Batch pricing is unavailable.'};
   const orderCode = `SAMA-${crypto.randomBytes(8).toString('hex').toUpperCase()}`;
-  const {data:registered,error:insertError}=await orderDb().rpc(v2?'register_batch_order_v2':'register_batch_order',{p:{
+  const discounts=process.env.CAMPAIGN_DISCOUNTS_INSTALLED==='true';
+  if(discounts&&process.env.MANUAL_BALANCE_INSTALLED!=='true')return {error:'Discount checkout is not fully configured. Contact support.'};
+  let discountHash:string|null=null;
+  try{if(formData.discountCode?.trim()){if(!discounts)return {error:'Discount checkout is not enabled.'};discountHash=discountCodeHash(formData.discountCode);await limitRequest('discount-redemption',8,600,email||undefined);}}catch{return {error:'Check the discount code, or wait a few minutes before trying again.'};}
+  const {data:registered,error:insertError}=await orderDb().rpc(discounts?'register_batch_order_discount':v2?'register_batch_order_v2':'register_batch_order',{...(discounts?{p_hash:discountHash}:{}),p:{
     order_code:orderCode,batch_id:batchId,customer_name:name,customer_phone:phone,customer_email:email,quantity,...address,...(v2?{policy_accepted:true,collection_policy_version:COLLECTION_POLICY_VERSION}:{})
   }});
   if(insertError || !registered){
+    if(insertError?.message.includes('DISCOUNT_MINIMUM'))return {error:'Campaign codes apply only to products priced at S$50 or more per unit before discount.'};
+    if(insertError?.message.includes('DISCOUNT_'))return {error:'This code is unavailable for this order. Check its expiry and use the email address you registered with, or contact support.'};
     if(insertError?.message.includes('ORDER_EXISTS') || insertError?.code==='23505') return {error:'An order already exists for these details. Use your saved order code or contact support.'};
     if(insertError?.message.includes('BATCH_CLOSED')) return {error:'This batch is no longer accepting orders.'};
     console.error('Order registration failed:',insertError?.code);
@@ -68,6 +76,7 @@ export async function joinGroupBuy(formData: {
   return { 
     success: true, 
     orderCode: orderCode,
+    discountCents: Number(registered.discount_cents||0),
     depositCents: Number(registered.deposit_due_cents)
   };
  });

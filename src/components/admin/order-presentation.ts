@@ -1,4 +1,5 @@
 export type OrderReadiness = {
+  cancelled_at?:string|null;
   payment_status: string;
   fulfilment_method?:string;
   deposit_due_cents: number | null;
@@ -12,7 +13,7 @@ export type OrderReadiness = {
 // Presentation only. The authenticated order_operation RPC still authorizes every handover.
 export function paymentCleared(order: OrderReadiness) {
   const {deposit_due_cents: deposit, final_total_cents: total, balance_due_cents: balance} = order;
-  return order.payment_status === 'VERIFIED' && deposit != null && total != null && balance != null
+  return !order.cancelled_at && order.payment_status === 'VERIFIED' && deposit != null && total != null && balance != null
     && deposit >= 0 && balance >= 0 && total === deposit + balance
     && (balance === 0 || !!order.balance_paid_at);
 }
@@ -22,6 +23,7 @@ export function readyForHandover(order: OrderReadiness) {
 }
 
 export function orderStatus(order: OrderReadiness) {
+  if(order.cancelled_at)return {label:'Cancelled',tone:'neutral'};
   if (order.payment_status === 'REFUNDED') return {label: 'Refunded', tone: 'neutral'};
   if (order.fulfilled_at) return {label: 'Completed', tone: 'neutral'};
   if (readyForHandover(order)) return {label: 'Ready for handover', tone: 'success'};

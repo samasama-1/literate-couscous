@@ -119,6 +119,11 @@ export interface Database {
           ready_at: string | null
           fulfilled_at: string | null
           fulfilled_by: string | null
+          campaign_coupon_id: string | null
+          campaign_discount_cents: number
+          quoted_unit_cents: number | null
+          delivery_charge_cents: number | null
+          cancelled_at: string | null
           balance_revision: number
           collection_access_version: number
           received_by: string | null
@@ -151,6 +156,11 @@ export interface Database {
           ready_at?: string | null
           fulfilled_at?: string | null
           fulfilled_by?: string | null
+          campaign_coupon_id?: string | null
+          campaign_discount_cents?: number
+          quoted_unit_cents?: number | null
+          delivery_charge_cents?: number | null
+          cancelled_at?: string | null
           balance_revision?: number
           collection_access_version?: number
           received_by?: string | null
@@ -183,6 +193,11 @@ export interface Database {
           ready_at?: string | null
           fulfilled_at?: string | null
           fulfilled_by?: string | null
+          campaign_coupon_id?: string | null
+          campaign_discount_cents?: number
+          quoted_unit_cents?: number | null
+          delivery_charge_cents?: number | null
+          cancelled_at?: string | null
           balance_revision?: number
           collection_access_version?: number
           received_by?: string | null

@@ -1,3 +1,4 @@
+import DiscountQuoteForm from '@/components/admin/DiscountQuoteForm';
 import CollectionPaymentDesk from '@/components/admin/CollectionPaymentDesk';
 import CollectionManagement from '@/components/CollectionManagement';
 import {collectorActive} from '@/lib/collections/access';
@@ -26,7 +27,7 @@ export default async function OrderDetail({params}:{params:Promise<{id:string}>}
  const collector=collectorResult?.data;
  const validCollector=collectorActive(collector)?collector:null;
  const deposit=o.deposit_due_cents??Math.round(Number(batch?.deposit_amount||0)*100)*o.quantity;
- const active=o.payment_status!=='REFUNDED'&&!o.fulfilled_at;
+ const active=o.payment_status!=='REFUNDED'&&!o.fulfilled_at&&!o.cancelled_at;
  const full=paymentCleared(o);
  const badge=orderStatus(o);
  return <AdminWorkspace>
@@ -43,7 +44,7 @@ export default async function OrderDetail({params}:{params:Promise<{id:string}>}
  <div>Deposit<strong>{money(o.deposit_due_cents)}</strong><small>{o.payment_status==='VERIFIED'?'Verified':o.payment_status==='REFUNDED'?'Refunded':'Not verified'}</small></div>
  <div>Remaining balance<strong>{money(o.balance_due_cents)}</strong><small>{o.balance_due_cents===0?'No balance due':o.balance_paid_at?'Verified':'Not verified'}</small></div>
  <div>Final total<strong>{money(o.final_total_cents)}</strong><small>Whole order · SGD</small></div>
- </div><dl className={styles.descriptionList}><div><dt>Deposit verified</dt><dd>{dateTime(o.deposit_verified_at)}</dd></div><div><dt>Balance verified</dt><dd>{dateTime(o.balance_paid_at)}</dd></div><div><dt>Marked ready</dt><dd>{dateTime(o.ready_at)}</dd></div><div><dt>Handover recorded</dt><dd>{dateTime(o.fulfilled_at)}</dd></div></dl></section>
+ </div><dl className={styles.descriptionList}><div><dt>Deposit verified</dt><dd>{dateTime(o.deposit_verified_at)}</dd></div><div><dt>Balance verified</dt><dd>{dateTime(o.balance_paid_at)}</dd></div><div><dt>Marked ready</dt><dd>{dateTime(o.ready_at)}</dd></div><div><dt>Handover recorded</dt><dd>{dateTime(o.fulfilled_at)}</dd></div></dl>{o.quoted_unit_cents!=null&&<p>Product subtotal before discount: {money(o.quoted_unit_cents*o.quantity)} · Agreed delivery charge: {money(o.delivery_charge_cents||0)}</p>}{!!o.campaign_discount_cents&&<p>Campaign discount: {money(o.campaign_discount_cents)} · S$10 × {o.quantity} unit(s). Net total and balance already include this discount.</p>}</section>
  {jobs&&<section className={styles.detailSection}><h2>Email & CRM deliveries</h2>{jobs.error?<p>Unable to read integration jobs. Check the queue setup.</p>:jobs.data?.length?<div className={styles.timeline}>{jobs.data.map(j=><article key={j.id} className={styles.event}><strong>{j.kind==='email'?'Email':'CRM'} · {j.event.replaceAll('_',' ')}</strong><p>{j.status==='sent'?(j.kind==='email'?'Accepted by email provider':'Synced to CRM'):j.status} · {dateTime(j.completed_at||j.available_at)}</p>{j.error_code&&<small>{j.error_code} — review before retrying an uncertain send.</small>}</article>)}</div>:<p>No integration jobs yet. Only new order events are queued after installation.</p>}</section>}
  {collectionEnabled&&<section className={styles.detailSection}><h2>Collection & storage</h2>
  {fees?.error||collectorResult?.error?<p role="alert">Collection setup is unavailable. Check the new migration before handover.</p>:<>
@@ -63,10 +64,11 @@ export default async function OrderDetail({params}:{params:Promise<{id:string}>}
  {active&&(!manualBalances||o.fulfilment_method==='delivery')&&o.payment_status==='VERIFIED'&&o.balance_due_cents!=null&&o.balance_due_cents>0&&!o.balance_paid_at&&<OrderOperationForm id={id} operation="balance_paid" label="Verify remaining payment" amount={o.balance_due_cents} referenceLabel="Bank transaction reference"/>}
  {active&&full&&!o.ready_at&&(!manualBalances||o.fulfilment_method==='delivery')&&<OrderOperationForm id={id} operation="ready" label="Mark ready for collection / delivery"/>}
  {active&&manualBalances&&o.fulfilment_method==='collection'&&<CollectionPaymentDesk order={o} verifier={history?.find(h=>h.action==='balance_paid')?.actor}/>}
- {active&&manualBalances&&o.fulfilment_method==='delivery'&&!o.ready_at&&!o.balance_paid_at&&<><OrderOperationForm id={id} operation="final_total" label="Confirm final delivery order total" amount={o.final_total_cents} revision={o.balance_revision}/><p>Include all agreed delivery charges. <Link href="/admin/delivery-payments">Preview and send delivery balance emails →</Link></p></>}
+ {active&&manualBalances&&o.fulfilment_method==='delivery'&&!o.ready_at&&!o.balance_paid_at&&<>{process.env.CAMPAIGN_DISCOUNTS_INSTALLED==='true'?<DiscountQuoteForm key={`discount-quote:${id}:${o.balance_revision}`} id={id} revision={o.balance_revision} quantity={o.quantity} method={o.fulfilment_method} unit={o.quoted_unit_cents} delivery={o.delivery_charge_cents} discount={o.campaign_discount_cents}/>:<OrderOperationForm id={id} operation="final_total" label="Confirm final delivery order total" amount={o.final_total_cents} revision={o.balance_revision}/>}<p>Include all agreed delivery charges. <Link href="/admin/delivery-payments">Preview and send delivery balance emails →</Link></p></>}
  {active&&full&&o.ready_at&&(o.fulfilment_method==='delivery'?<OrderOperationForm id={id} operation="fulfil" label="Mark delivered" referenceLabel="Delivery proof / recipient reference"/>:<div className={styles.handover}><h3>Confirm handover</h3><p>Check the customer, order code and all {o.quantity} unit(s).</p><CollectionCheckoff id={id} customerName={o.customer_name} collector={validCollector} requireAuthorisation={collectionEnabled}/></div>)}
 
  {o.fulfilled_at&&<div className={styles.completed} role="status"><h3>{o.fulfilment_method==='delivery'?'Delivery':'Collection'} recorded</h3><p>{dateTime(o.fulfilled_at)}<br/>Received by {o.received_by}<br/>Recorded by {o.fulfilled_by}</p></div>}
+ {o.cancelled_at&&<p>Unpaid order cancelled when its campaign code was reinstated. Do not collect a deposit or release goods for this order.</p>}
  {o.payment_status==='REFUNDED'&&<p>This order is refunded. Payment and handover actions are unavailable.</p>}
  </>}
  <p className={styles.note}>Verify payments against your bank records before recording them here.</p>
