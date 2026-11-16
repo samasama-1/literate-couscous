@@ -1,4 +1,5 @@
-export type BatchInput = {id: string | null; revision: number | null; name: string; description: string; image_url: string | null; features: string[]; retail_price_cents: number | null; target_capacity: number; deposit_cents: number; tier_1_cents: number; tier_2_cents: number | null; tier_3_cents: number | null; closes_at: string; status: 'OPEN' | 'CLOSED' | 'DELIVERED'};
+import {pricingConfigured} from './pricing';
+export type BatchInput = {id: string | null; revision: number | null; name: string; description: string; image_url: string | null; features: string[]; retail_price_cents: number | null; target_capacity: number; minimum_verified_units: number | null; tier_2_start: number | null; tier_3_start: number | null; deposit_cents: number; tier_1_cents: number; tier_2_cents: number | null; tier_3_cents: number | null; closes_at: string; status: 'OPEN' | 'CLOSED' | 'DELIVERED'};
 export const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 function amount(value: unknown, optional = false) {
   const text = String(value ?? '').trim();
@@ -27,6 +28,10 @@ export function parseBatch(form: FormData): BatchInput {
   const deposit = amount(form.get('deposit_amount'))!, tier1 = amount(form.get('tier_1_price'))!;
   const tier2 = amount(form.get('tier_2_price'), true), tier3 = amount(form.get('tier_3_price'), true);
   if (tier1 <= 0 || (tier2 != null && (tier2 <= 0 || tier2 > tier1)) || (tier3 != null && (tier2 == null || tier3 <= 0 || tier3 > tier2)) || deposit > (tier3 ?? tier2 ?? tier1)) throw new Error('Prices must decrease by tier, and the deposit cannot exceed the lowest price.');
+  const units = (key: string) => {const value = text(key); if (!value) return null; if (!/^\d{1,6}$/.test(value)) throw Error('Tier thresholds and the minimum must be whole unit counts.'); return Number(value);};
+  const minimum = units('minimum_verified_units'), start2 = units('tier_2_start'), start3 = units('tier_3_start');
+  const legacy = !!id && minimum == null && start2 == null && start3 == null;
+  if (!legacy && !pricingConfigured({target_capacity: capacity, minimum_verified_units: minimum, tier_2_start: start2, tier_3_start: start3, tier_1_price: tier1, tier_2_price: tier2, tier_3_price: tier3})) throw Error('Set a minimum within capacity and increasing tier starts matching each optional tier price. Tier 2 starts at 2 units or more.');
   const status = text('status') || 'OPEN';
   if (!['OPEN', 'CLOSED', 'DELIVERED'].includes(status)) throw new Error('Invalid batch status.');
   // datetime-local is deliberately interpreted as Singapore time, not the browser/server timezone.
@@ -34,7 +39,7 @@ export function parseBatch(form: FormData): BatchInput {
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(rawDate)) throw new Error('Choose a closing date and time in Singapore time.');
   const date = new Date(rawDate + ':00+08:00');
   if (!Number.isFinite(date.getTime()) || new Date(date.getTime() + 8 * 3600000).toISOString().slice(0,16) !== rawDate) throw new Error('Invalid closing date.');
-  return {id, revision, name, description, image_url: image || null, features, retail_price_cents: amount(form.get('retail_price'), true), target_capacity: capacity, deposit_cents: deposit, tier_1_cents: tier1, tier_2_cents: tier2, tier_3_cents: tier3, closes_at: date.toISOString(), status: status as BatchInput['status']};
+  return {id, revision, name, description, image_url: image || null, features, retail_price_cents: amount(form.get('retail_price'), true), target_capacity: capacity, minimum_verified_units: minimum, tier_2_start: start2, tier_3_start: start3, deposit_cents: deposit, tier_1_cents: tier1, tier_2_cents: tier2, tier_3_cents: tier3, closes_at: date.toISOString(), status: status as BatchInput['status']};
 }
 export function publicBatchUrl(id: string, origin: string) {
   if (!uuid.test(id)) throw new Error('Invalid batch ID.');

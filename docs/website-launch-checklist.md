@@ -35,6 +35,24 @@ Local implementation: [manual-balance-rollout.md](manual-balance-rollout.md). Se
 - [ ] Verify controlled registration email → same-email code use → verified deposit → per-unit final quote → collection or manual delivery balance email. Check expiry, duplicate attempts, cancellation and discounted refund reconciliation.
 - [ ] Resolve the existing known-unsent campaign confirmation retry/ownership work and provider capacity before public registration; this feature adds no new mail drain or reminder schedule.
 
+## Readiness scope — week of 16 November 2026
+
+Marcus intends to use this week to finalise all customer-facing website copy. Visitors will likely encounter interest registration first, but **both interest and paid-order copy and their backend processes must be ready**. Interest-first traffic is not approval to defer paid-order readiness or publish unsupported promises. Review and track both journeys in parallel; production changes and test sends still require the appropriate approval.
+
+Working sequence and copy-to-backend acceptance matrix: [launch copy and workflow readiness](launch-copy-readiness-2026-11-16.md). No promised completion date, public opening or new automatic-email schedule is established by this planning target.
+
+### Verified-only capacity — 16 November implementation
+
+SQL/Vercel handoff and practical next steps: [verified-capacity-rollout-2026-11-16.md](verified-capacity-rollout-2026-11-16.md). The detail-page payment CTA now respects full capacity and no longer promises reservation on payment; saved-order and acknowledgement copy include the approved original-payment-method refund assurance. Refund/contact handling remains admin-owned.
+
+Marcus approved pending requests without reservations/expiry: capacity and tier participation count only after admin deposit verification. [Local implementation and installation](verified-batch-capacity.md): private per-batch counter, atomic hard-cap guard, public aggregate view, pending-aware batch editing and accurate checkout/acknowledgement copy. Migration and application remain local; no SQL has been applied remotely. Explicit product tier thresholds/minimum-to-proceed configuration and broader launch gates remain open. Admins must reconcile/refund actual received funds when availability is exhausted, rather than forcing an over-cap confirmation. Local verification: **115 tests passed**, plus TypeScript, lint and production build; independent PostgreSQL-session contention and actual production installation remain unverified.
+
+## Contact and refund copy — 16 November 2026
+
+Marcus confirmed the customer-facing name **SamaSama**, support via **hello@samasama.sg** only, no published business address for now, and a **10-business-day** refund turnaround. Local copy now removes contact/address placeholders and WhatsApp support/update promises, routes privacy enquiries to the support inbox, and aligns failed-batch refund wording with the Terms. Approved customer cancellations count from approval; failed batches count from confirmation that the batch will not proceed. No cancellation eligibility, collection fee rules, accepted policy-version identifiers, financial processing or automatic refund behaviour changed.
+
+Remaining: confirm registered legal entity details separately before paid launch, resolve cancellation-eligibility wording and the other launch promises, approve full email copy, and publish after review. These contact decisions do not resolve the wider launch gates.
+
 ## Confirmed decisions
 
 - Commercial policy approved for now: seven free days, then S$10 per order per commenced seven-day period, uncapped; discretionary adjustments are audited. After the two additional weeks, cancellation/resale is a **manual review**, not automatic forfeiture or disposal. Preserve accepted policy versions when later changing terms.

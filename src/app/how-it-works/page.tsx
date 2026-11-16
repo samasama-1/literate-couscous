@@ -25,7 +25,7 @@ const steps = [
   {
     number: "02",
     title: "Place a deposit",
-    description: "Pay a small, fully-refundable deposit to secure your slot. Your deposit shows genuine interest to the supplier.",
+    description: "Submit your order request and pay the stated deposit. Your slot is secured only after SamaSama verifies your payment and confirms availability. Submitting a request does not reserve units.",
   },
   {
     number: "03",

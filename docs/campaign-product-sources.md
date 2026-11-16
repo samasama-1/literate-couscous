@@ -1,6 +1,77 @@
 # Internal shortlist source register
 
-Updated 22 September 2026. Internal reference only; do not copy supplier names, model codes or this document into public campaign fields.
+Historical evidence recorded 22 September 2026; planned lineup updated 16 November 2026. Internal reference only; do not copy supplier names, model codes or this document into public campaign fields without approval.
+
+## Planned launch lineup — confirmed 16 November
+
+Marcus confirmed two hairdryers and two air fryers for the launch-copy review:
+
+| Category | Supplier | Model supplied on 16 November | Public name / starting price — confirmed 16 November |
+| --- | --- | --- | --- |
+| Hairdryer | Ryaca | BY-5988 | Studio-Air / S$119 |
+| Hairdryer | VGO | VGO-1 | Everyday Air / S$109 |
+| Air fryer | Biyi | AFS-729 | Single Stack Steamer/Airfryer / S$219 |
+| Air fryer | Careline | TTDS-1101-A | Double Stack Steamer/Airfryer / S$229 |
+
+The model labels above are the current planning input, not proof of specifications or image compatibility. Earlier VGO evidence uses **VH01** and Biyi evidence uses **AFS-729A**. Confirm whether these are the same units or revised models before reusing their photos, specifications, certifications or test results. Do not silently equate them. The historical source records below do not authorise publishing supplier names. No live campaign data has been changed.
+
+### Approved three-tier product prices — 16 November
+
+Revised at Marcus’s request: **S$10 added to every tier**, superseding the earlier 16 November prices. Deposits are recalculated at 50% of the revised Tier 1 price. Tier quantities and hard limits are unchanged.
+
+All amounts are SGD per unit, before the separate eligible campaign reward and any agreed delivery charges. Do not present the best tier as guaranteed or deduct the reward from the advertised starting price without showing its separate conditions.
+
+| Public product | Tier 1 / starting | Tier 2 | Tier 3 / best |
+| --- | --- | --- | --- |
+| Studio-Air | S$119 | S$109 | S$99 |
+| Everyday Air | S$109 | S$99 | S$89 |
+| Single Stack Steamer/Airfryer | S$219 | S$209 | S$199 |
+| Double Stack Steamer/Airfryer | S$229 | S$219 | S$209 |
+
+### Approved tier separators — 16 November
+
+Ranges are inclusive and refer to verified units, not interest submissions or customer counts. Multi-unit verified orders contribute their quantity. These ranges describe the batch participation level that selects its per-unit tier; they are not marginal price bands charging early units differently from later units.
+
+| Public product | Tier 1 | Tier 2 | Tier 3 | Hard order limit |
+| --- | --- | --- | --- | --- |
+| Studio-Air | 1–423 units · S$119 | 424–712 units · S$109 | 713–1,000 units · S$99 | 1,000 |
+| Everyday Air | 1–448 units · S$109 | 449–724 units · S$99 | 725–1,000 units · S$89 | 1,000 |
+| Single Stack Steamer/Airfryer | 1–461 units · S$219 | 462–782 units · S$209 | 783–1,103 units · S$199 | 1,103 |
+| Double Stack Steamer/Airfryer | 1–490 units · S$229 | 491–800 units · S$219 | 801–1,109 units · S$209 | 1,109 |
+
+Store explicit Tier 2/Tier 3 starting quantities per batch: **424/713**, **449/725**, **462/783**, **491/801** respectively. The current public batch page instead derives tier starts from 25%/70% of target capacity; its separate milestone markers also use different boundary rounding. Replace those assumptions with the approved per-batch values, and ensure price tables, current price, next-unlock text, progress markers and admin/final-pricing workflow agree. Test each boundary immediately below, at and above the threshold, including a multi-unit order crossing it. Starting-price display before any verified order should remain Tier 1; the maximum-capacity endpoints do not define the minimum-to-proceed counts specified below, or an automatic batch-success/cancellation rule.
+
+### Approved deposits and hard limits — 16 November
+
+Marcus confirmed a deposit of **50% of the Tier 1 price per unit**, fixed independently of later tier reductions. The existing approved campaign reward does not reduce the deposit; deduct it from the final product total/balance. Multiply the per-unit deposit by order quantity using integer cents.
+
+| Public product | Tier 1 price | Deposit per unit | Deposit in cents | Hard unit limit |
+| --- | --- | --- | --- | --- |
+| Studio-Air | S$119 | S$59.50 | 5,950 | 1,000 |
+| Everyday Air | S$109 | S$54.50 | 5,450 | 1,000 |
+| Single Stack Steamer/Airfryer | S$219 | S$109.50 | 10,950 | 1,103 |
+| Double Stack Steamer/Airfryer | S$229 | S$114.50 | 11,450 | 1,109 |
+
+The range endpoints are hard order limits, not only progress targets. Marcus approved **verified-only allocation**: pending order submissions and interest registrations do not reserve capacity or advance price tiers. There is no expiry job or automatic cancellation. Units are allocated only when an admin verifies the deposit and the database atomically confirms remaining capacity. The same guard covers concurrent/multi-unit orders with and without a coupon. Near capacity a customer may pay before availability is confirmed; admins must reconcile the receipt and resolve any approved refund instead of over-confirming. See [the local implementation](verified-batch-capacity.md). Existing explicit refund-status changes retain the previous verified-count semantics; this feature adds no automatic refund or stock-return process.
+
+### Approved minimum verified participation to proceed — 16 November
+
+Marcus confirmed that the **upper end of Tier 1** is the minimum verified unit count needed before each batch can proceed:
+
+| Public product | Minimum verified units | Price at that minimum | Tier 2 starts | Hard unit limit |
+| --- | --- | --- | --- | --- |
+| Studio-Air | 423 | S$119/unit | 424 | 1,000 |
+| Everyday Air | 448 | S$109/unit | 449 | 1,000 |
+| Single Stack Steamer/Airfryer | 461 | S$219/unit | 462 | 1,103 |
+| Double Stack Steamer/Airfryer | 490 | S$229/unit | 491 | 1,109 |
+
+Interest registrations and unpaid orders do not count towards these verified-participation minimums. Below the minimum a batch cannot proceed; at the minimum it meets the participation requirement at Tier 1 pricing. The next verified unit unlocks Tier 2 for that batch, under the agreed final-price rules for eligible orders. The minimum is distinct from its hard capacity limit.
+
+Meeting the minimum does not itself close a batch, lock final prices, approve procurement, send outcome emails or trigger a refund. Keep those lifecycle actions separate; the exact closing deadline and handling of reductions/refunds before final approval still need an operational rule. The confirmed minimum must gate the decision to proceed, rather than relying on a presentation-only milestone. Test minimum minus one, minimum, and minimum plus one, and re-check authoritative verified quantities at the decision point.
+
+These are copy/configuration decisions recorded locally; no production batch/campaign records or checkout configuration have been changed.
+
+## Historical shortlist and evidence — 22 September
 
 | Public card | Supplier / model supplied by Marcus | Displayed price | Public asset |
 | --- | --- | --- | --- |

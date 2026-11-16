@@ -1,3 +1,4 @@
+import {ORDER_CAPACITY_ERROR} from '../src/lib/orders/availability.ts';
 import {workerMetrics,observeQuery,observeOperation} from '../src/lib/operations/telemetry.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -124,7 +125,7 @@ test('admin handover passes the ID attestation and treats already-collected as a
  try{
  const {operateOrder}=await loadTs('../src/app/actions/order-operations.ts',{
  '@/lib/operations/telemetry':{observeOperation},'node:crypto':{randomBytes:()=>{throw Error('not used');},createHash:()=>{throw Error('not used');}},
- '@/lib/adminAuth':{verifyAdminAccess:async()=>({email:'admin@example.test'})},'@/lib/orders/db':{orderDb:()=>({rpc:async(name,args)=>{calls++;assert.equal(name,'fulfil_order_named');assert.equal(args.p_actor,'admin@example.test');return args.p_identity_checked?{data:outcome}:{error:{message:'IDENTITY_CHECK_REQUIRED'}};}})},
+ '@/lib/orders/availability':{ORDER_CAPACITY_ERROR},'@/lib/adminAuth':{verifyAdminAccess:async()=>({email:'admin@example.test'})},'@/lib/orders/db':{orderDb:()=>({rpc:async(name,args)=>{calls++;assert.equal(name,'fulfil_order_named');assert.equal(args.p_actor,'admin@example.test');return args.p_identity_checked?{data:outcome}:{error:{message:'IDENTITY_CHECK_REQUIRED'}};}})},
  '@/lib/orders/validation':{moneyCents:()=>0},'next/cache':{revalidatePath:()=>{}},'next/server':{after:()=>{}},'./zoho':{updateDealStageInZoho:()=>{}},'@/lib/order-integrations/links':{sealLink:()=>{}}
  });
  const form=new FormData();form.set('id',randomUUID());form.set('operation','fulfil');form.set('reference','Owner');

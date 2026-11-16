@@ -1,0 +1,3 @@
+export const ORDER_AVAILABILITY_NOTICE='Submitting an order does not reserve units. Your slot is secured only after SamaSama verifies your payment and confirms availability.';
+export const ORDER_CAPACITY_REFUND_NOTICE='If the capacity is unavailable after you pay, our team will reach out to let you know, and your deposit will be refunded via your original payment method.';
+export const ORDER_CAPACITY_ERROR='There are not enough units available to confirm this order. No confirmation was saved. Reconcile any funds already received and contact the customer to resolve the order or arrange an approved refund. Do not release goods.';

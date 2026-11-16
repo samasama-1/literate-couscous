@@ -1,3 +1,4 @@
+import {ORDER_AVAILABILITY_NOTICE,ORDER_CAPACITY_REFUND_NOTICE} from '../src/lib/orders/availability.ts';
 import {workerMetrics,observeQuery,observeOperation} from '../src/lib/operations/telemetry.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -112,10 +113,12 @@ async function loadTs(relative,imports){
  vm.runInThisContext('(function(require,module,exports){'+code+'\n})')(name=>{if(name==='server-only')return {};assert.ok(name in imports,`Unexpected import ${name}`);return imports[name];},mod,mod.exports);return mod.exports;
 }
 test('actual email templates escape customer text and encrypt/decrypt private balance links without exposing them to CRM',async()=>{
- const {orderMessage}=await loadTs('../src/lib/order-integrations/messages.ts',{'./policy':{publicOrigin},'./links':{openLink},'../collections/policy':{productImage,COLLECTION_POLICY_TEXT}});
+ const {orderMessage}=await loadTs('../src/lib/order-integrations/messages.ts',{'../orders/availability':{ORDER_AVAILABILITY_NOTICE,ORDER_CAPACITY_REFUND_NOTICE},'./policy':{publicOrigin},'./links':{openLink},'../collections/policy':{productImage,COLLECTION_POLICY_TEXT}});
  const id=randomUUID(),token='b'.repeat(64),hash=createHash('sha256').update(token).digest('hex');
  const p={batch_id:randomUUID(),order_code:'SAMA-0123456789ABCDEF',name:'<script>bad</script>',email:'owner@example.com',quantity:1,deposit_cents:5000,balance_cents:1000,product:'Dryer',balance_hash:hash,link_envelope:sealLink(token,id,secret)};
- const pending=orderMessage('order_received',p,id,'https://example.com',secret);assert.match(pending.text,/not yet been verified/);assert.ok(!pending.html.includes('<script>'));assert.ok(pending.html.includes('&lt;script&gt;'));
+ const pending=orderMessage('order_received',p,id,'https://example.com',secret);assert.match(pending.text,/not yet been verified/);assert.ok(pending.text.includes(ORDER_AVAILABILITY_NOTICE));assert.ok(!pending.html.includes('<script>'));assert.ok(pending.html.includes('&lt;script&gt;'));
+ assert.ok(pending.text.includes(ORDER_CAPACITY_REFUND_NOTICE));assert.ok(pending.html.includes(ORDER_CAPACITY_REFUND_NOTICE));
+ assert.ok(!orderMessage('deposit_received',p,id,'https://example.com',secret).text.includes(ORDER_CAPACITY_REFUND_NOTICE));
  for(const event of ['order_received','deposit_received','balance_requested','balance_paid','ready']){const message=orderMessage(event,p,id,'https://example.com',secret);assert.ok(message.text.includes('Product: Dryer'));assert.ok(message.text.includes(`Batch ID: ${p.batch_id}`));assert.ok(message.text.includes(`https://example.com/group-buys/${p.batch_id}`));assert.ok(message.html.includes(`/group-buys/${p.batch_id}`));}
  const collectionReady=orderMessage('ready',{...p,method:'collection',balance_cents:1000},id,'https://example.com',secret);assert.match(collectionReady.text,/S\$10.00, payable at collection/);assert.ok(!orderMessage('ready',{...p,method:'collection',balance_cents:0},id,'https://example.com',secret).text.includes('payable at collection'));
  const collectorNotice=orderMessage('collector_changed',{...p,change:'authorised',collector_name:'<script>Collector</script>'},id,'https://example.com',secret);assert.ok(!collectorNotice.html.includes('<script>'));assert.match(collectorNotice.text,/original photo ID/);

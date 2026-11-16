@@ -130,7 +130,7 @@ export default function PolicyPage({ policy }: { policy: PolicyDocument }) {
       <section className="section" style={{ background: "var(--color-surface)", borderBottom: "1px solid var(--color-border)" }}>
         <div className="container-site">
           <div className="policy-shell" style={{ textAlign: "center" }}>
-            <span className="policy-eyebrow">Sama Sama Policies</span>
+            <span className="policy-eyebrow">SamaSama Policies</span>
             <h1 style={{ marginBottom: "1rem" }}>{policy.title}</h1>
             <p style={{ fontSize: "var(--text-md)", maxWidth: "680px", margin: "0 auto" }}>
               {policy.description}

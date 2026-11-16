@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import {COLLECTION_POLICY_TEXT,COLLECTION_POLICY_VERSION,DELIVERY_NOTICE} from '@/lib/collections/policy';
 import { joinGroupBuy } from '@/app/actions/join';
+import {ORDER_AVAILABILITY_NOTICE,ORDER_CAPACITY_REFUND_NOTICE} from '@/lib/orders/availability';
 
 interface Props {
   collectionPolicyEnabled?: boolean;
@@ -59,7 +60,7 @@ export default function JoinGroupBuyForm({ batchId, depositAmount, payment, coll
       <div style={{ background: "white", padding: "3rem 2rem", borderRadius: "var(--radius-lg)", border: '2px solid var(--color-success)', textAlign: "center", boxShadow: "var(--shadow-md)" }}>
         <h2 style={{color:'var(--color-success)',marginBottom:'1rem'}}>Order saved</h2>
         <p style={{ marginBottom: "2rem", fontSize: "var(--text-lg)" }}>
-          Please complete your deposit of <strong style={{ color: "var(--color-primary)" }}>${((savedDeposit ?? Math.round(depositAmount*100)*formData.quantity)/100).toFixed(2)}</strong> via PayNow to officially lock in your spot.
+          Deposit to pay: <strong style={{ color: "var(--color-primary)" }}>${((savedDeposit ?? Math.round(depositAmount*100)*formData.quantity)/100).toFixed(2)}</strong> via PayNow. {ORDER_AVAILABILITY_NOTICE}
         </p>
         
         {savedDiscount>0&&<p>Campaign discount reserved: S${(savedDiscount/100).toFixed(2)} across {formData.quantity} unit(s). It reduces the final balance after the qualifying price is confirmed. Your deposit is unchanged.</p>}
@@ -79,8 +80,8 @@ export default function JoinGroupBuyForm({ batchId, depositAmount, payment, coll
           <p>Use <strong>{orderCode}</strong> as the transaction reference.</p>
         </div> : <p>Payment instructions are not available yet. Save your order code; SamaSama will provide payment instructions before you transfer.</p>}
 
-        <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-light)" }}>
-          Once transferred, our team will verify it and your order will instantly count towards the batch progress!
+        <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-muted)" }}>
+          Our team checks credited funds and remaining availability before confirming your order. Only verified orders count towards batch progress. {ORDER_CAPACITY_REFUND_NOTICE}
         </p>
       </div>
     );
@@ -184,13 +185,14 @@ export default function JoinGroupBuyForm({ batchId, depositAmount, payment, coll
 
         {discountEnabled&&<label style={{display:'block'}}>Campaign discount code (optional)<input value={discountCode} onChange={e=>setDiscountCode(e.target.value)} maxLength={100} autoComplete="off" placeholder="Paste your personal SAMA10- code" style={{display:'block',width:'100%',padding:12}}/><small>{discountCode.trim()?`Requested discount: S$${(formData.quantity*10).toFixed(2)} across ${formData.quantity} unit(s), checked when you save the order. `:''}S$10 off each unit, up to 10 units. Product price must be at least S$50 per unit before discount. Use your registration email. Your deposit stays unchanged.</small></label>}
         {collectionPolicyEnabled&&<label><input type="checkbox" required checked={policyAccepted} onChange={e=>setPolicyAccepted(e.target.checked)}/> I agree to the <a href="/collection-delivery" target="_blank" rel="noreferrer">collection and delivery policy</a>. {COLLECTION_POLICY_TEXT}</label>}
+        <p>{ORDER_AVAILABILITY_NOTICE}</p>
         <button 
           type="submit" 
           disabled={loading}
           className="btn btn-primary btn-lg" 
           style={{ width: "100%", opacity: loading ? 0.7 : 1, transition: "opacity 0.2s" }}
         >
-          {loading ? 'Processing...' : 'Reserve Spot & Pay Deposit'}
+          {loading ? 'Processing...' : 'Submit order & view deposit instructions'}
         </button>
       </form>
     </div>

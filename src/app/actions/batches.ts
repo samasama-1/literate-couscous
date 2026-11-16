@@ -9,7 +9,7 @@ const messages: Record<string, string> = {
   BATCH_CHANGED: 'Another administrator changed this batch. Refresh before editing again.',
   BATCH_NOT_FOUND: 'This batch no longer exists.',
   BATCH_PRICES_LOCKED: 'This batch has orders. Deposit and tier prices are locked; create a new batch for new pricing.',
-  BATCH_CAPACITY_TOO_LOW: 'Capacity cannot be lower than the units already ordered, excluding refunds.',
+  BATCH_CAPACITY_TOO_LOW: 'Capacity cannot be lower than the verified unit count. Refresh and check this batch.',
   BATCH_OUTSTANDING_ORDERS: 'Some orders are not fulfilled. Close the batch instead of marking it delivered.',
   BATCH_HAS_ORDERS: 'Batches with orders cannot be deleted. Close the batch to stop new orders.',
   INVALID_CLOSING_TIME: 'An open batch must have a future closing date and time.',

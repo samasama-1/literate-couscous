@@ -102,7 +102,7 @@ export default function Header() {
               letterSpacing: "-0.02em",
             }}
           >
-            Sama Sama
+            SamaSama
           </Link>
 
           {/* Center: Navigation Links */}

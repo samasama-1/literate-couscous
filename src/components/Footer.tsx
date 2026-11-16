@@ -91,7 +91,7 @@ export default function Footer() {
                 color: "var(--color-text)",
                 letterSpacing: "-0.01em",
               }}>
-                Sama Sama
+                SamaSama
               </span>
             </div>
 
@@ -158,7 +158,7 @@ export default function Footer() {
           }}
         >
           <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-light)", margin: 0 }}>
-            © {year} Sama Sama. All rights reserved. 
+            © {year} SamaSama. All rights reserved.
           </p>
           <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-light)", margin: 0 }}>
             Curated appliances, not mass-marketed.

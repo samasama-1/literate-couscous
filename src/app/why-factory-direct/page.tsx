@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Why Direct | Sama Sama",
+  title: "Why Direct | SamaSama",
   description: "Discover why factory-direct group buys are the smartest way to purchase premium home appliances in Singapore.",
 };
 
@@ -45,7 +45,7 @@ export default function WhyDirectPage() {
             </div>
 
             <div style={{ marginBottom: "3rem", padding: "3rem 2rem", background: "var(--color-surface)", borderRadius: "var(--radius-xl)", border: "2px solid var(--color-border)" }}>
-              <h2 style={{ fontSize: "2rem", marginBottom: "1.5rem" }}>The Sama Sama Way</h2>
+              <h2 style={{ fontSize: "2rem", marginBottom: "1.5rem" }}>The SamaSama Way</h2>
               <p style={{ fontSize: "var(--text-lg)", marginBottom: "1.5rem" }}>
                 China is the factory of the world. The same production lines that build expensive &quot;Western&quot; branded appliances are also creating incredible, feature-packed domestic brands.
               </p>

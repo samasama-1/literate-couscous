@@ -12,7 +12,7 @@ export default async function JoinPage({ params }: { params: Promise<{ id: strin
   // Verify batch exists and is OPEN
   const { data: batch } = await supabase
     .from('batch_progress_view')
-    .select('batch_id, deposit_amount, status, product_id')
+    .select('batch_id, deposit_amount, status, product_id, remaining_capacity')
     .eq('batch_id', id)
     .single();
 
@@ -36,11 +36,11 @@ export default async function JoinPage({ params }: { params: Promise<{ id: strin
       <div style={{ textAlign: "center", marginBottom: "3rem" }}>
         <h1 style={{ marginBottom: "1rem" }}>Join the Group Buy</h1>
         <p style={{ fontSize: "var(--text-lg)" }}>
-          You are reserving a unit for the <strong style={{ color: "var(--color-primary)" }}>{product?.name}</strong>.
+          Submit your order for <strong style={{ color: "var(--color-primary)" }}>{product?.name}</strong>. Availability is confirmed when our team verifies your deposit.
         </p>
       </div>
 
-      <JoinGroupBuyForm discountEnabled={process.env.CAMPAIGN_DISCOUNTS_INSTALLED==='true'} collectionPolicyEnabled={process.env.FULFILMENT_V2_ENABLED==='true'} batchId={batch.batch_id} depositAmount={batch.deposit_amount} payment={paymentConfig()} />
+      {batch.remaining_capacity<=0?<p role="status">This batch has reached its verified order limit. Please contact <a href="mailto:hello@samasama.sg">hello@samasama.sg</a> before making any payment.</p>:<JoinGroupBuyForm discountEnabled={process.env.CAMPAIGN_DISCOUNTS_INSTALLED==='true'} collectionPolicyEnabled={process.env.FULFILMENT_V2_ENABLED==='true'} batchId={batch.batch_id} depositAmount={batch.deposit_amount} payment={paymentConfig()} />}
     </div>
   );
 }

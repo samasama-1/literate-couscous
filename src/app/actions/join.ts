@@ -60,6 +60,7 @@ export async function joinGroupBuy(formData: {
     order_code:orderCode,batch_id:batchId,customer_name:name,customer_phone:phone,customer_email:email,quantity,...address,...(v2?{policy_accepted:true,collection_policy_version:COLLECTION_POLICY_VERSION}:{})
   }});
   if(insertError || !registered){
+    if(insertError?.message.includes('BATCH_CAPACITY_EXCEEDED'))return {error:'There are not enough units available for this quantity. No new order was saved. Please contact hello@samasama.sg before making payment.'};
     if(insertError?.message.includes('DISCOUNT_MINIMUM'))return {error:'Campaign codes apply only to products priced at S$50 or more per unit before discount.'};
     if(insertError?.message.includes('DISCOUNT_'))return {error:'This code is unavailable for this order. Check its expiry and use the email address you registered with, or contact support.'};
     if(insertError?.message.includes('ORDER_EXISTS') || insertError?.code==='23505') return {error:'An order already exists for these details. Use your saved order code or contact support.'};
@@ -68,7 +69,8 @@ export async function joinGroupBuy(formData: {
     return {error:'Failed to create your order. Please try again.'};
   }
 
-  // TODO: Implement cron job or Edge Function to expire PENDING_PAYNOW orders older than 24 hours.
+  // Pending requests do not reserve units or expire automatically. Capacity is claimed
+  // atomically only when an admin verifies the deposit; late payments need reconciliation.
 
   // Keep unverified customer identity in the order record only.
   // CRM contact updates require the future email-ownership verification flow.

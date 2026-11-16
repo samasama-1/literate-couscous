@@ -456,7 +456,7 @@ export default async function BatchDetailPage({ params }: PageProps) {
                 
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-xs)", fontFamily: "var(--font-body)", fontWeight: 500 }}>
                   <span style={{ color: "var(--color-primary)" }}>
-                    {batch.confirmed_quantity} units reserved
+                    {batch.confirmed_quantity} units verified
                   </span>
                   <span style={{ color: "var(--color-text-light)" }}>
                     Next goal: {batch.target_capacity} units
@@ -476,14 +476,14 @@ export default async function BatchDetailPage({ params }: PageProps) {
             </div>
 
             {/* CTA Buy Action */}
-            {batch.status === 'OPEN' ? (
+            {batch.status === 'OPEN' && batch.remaining_capacity > 0 ? (
               <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem" }}>
                 <Link 
                   href={`/group-buys/${batch.batch_id}/join`} 
                   className="btn btn-primary btn-lg" 
                   style={{ flex: 1, textAlign: "center", display: "block" }}
                 >
-                  Pay ${batch.deposit_amount} Deposit to Secure Spot
+                  Submit order · deposit S${Number(batch.deposit_amount).toFixed(2)} per unit
                 </Link>
                 <button 
                   className="btn btn-secondary" 
@@ -495,7 +495,7 @@ export default async function BatchDetailPage({ params }: PageProps) {
               </div>
             ) : (
               <button className="btn btn-secondary btn-lg" disabled style={{ width: "100%", marginBottom: "2rem" }}>
-                Batch Closed
+                {batch.status === 'OPEN' ? 'Batch full · verified order limit reached' : 'Batch Closed'}
               </button>
             )}
 

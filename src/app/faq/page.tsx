@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     question: "Is my deposit safe?",
-    answer: "Yes. Deposits are securely held. If a batch fails to reach its minimum required volume by the closing date, your deposit is refunded in full via PayNow within 3 working days. No questions asked."
+    answer: "Yes. Deposits are securely held. If a batch fails to reach its minimum required volume by the closing date, your deposit is refunded in full via PayNow within 10 business days from the date we confirm that the group-buy will not proceed."
   },
   {
     question: "What happens if I change my mind?",
@@ -39,7 +39,7 @@ const faqs = [
   },
   {
     question: "How long does delivery take?",
-    answer: "Because these are factory-direct group buys, timelines vary. Usually, it takes 3-4 weeks from the date the batch CLOSES for the items to be manufactured, shipped via sea freight, and cleared through Singapore customs. We keep you updated via WhatsApp at every step."
+    answer: "Because these are factory-direct group buys, timelines vary. Usually, it takes 3-4 weeks from the date the batch CLOSES for the items to be manufactured, shipped via sea freight, and cleared through Singapore customs. We send order updates by email."
   }
 ];
 
@@ -51,7 +51,7 @@ export default function FAQPage() {
           <div style={{ maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
             <h1 style={{ marginBottom: "1rem" }}>Frequently Asked Questions</h1>
             <p style={{ fontSize: "var(--text-lg)" }}>
-              Everything you need to know about Sama Sama group buys.
+              Everything you need to know about SamaSama group buys.
             </p>
           </div>
         </div>
@@ -88,9 +88,9 @@ export default function FAQPage() {
 
           <div style={{ textAlign: "center", marginTop: "4rem", padding: "3rem", background: "var(--color-surface)", borderRadius: "var(--radius-xl)", border: "2px solid var(--color-border)" }}>
             <h3 style={{ marginBottom: "1rem" }}>Still have questions?</h3>
-            <p style={{ marginBottom: "2rem" }}>Our team is ready to help via WhatsApp.</p>
-            <a href="https://wa.me/6500000000" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
-              Chat with us
+            <p style={{ marginBottom: "2rem" }}>Email hello@samasama.sg and our team will help.</p>
+            <a href="mailto:hello@samasama.sg" className="btn btn-primary">
+              Email us
             </a>
           </div>
         </div>

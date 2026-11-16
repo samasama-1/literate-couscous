@@ -37,7 +37,7 @@ export default function AppointmentsPage() {
             width="100%"
             height="700"
             style={{ border: "none", display: "block" }}
-            title="Book an Appointment with Sama Sama"
+            title="Book an Appointment with SamaSama"
             loading="lazy"
           />
         </div>

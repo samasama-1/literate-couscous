@@ -1,3 +1,4 @@
+import {ORDER_CAPACITY_ERROR} from '../src/lib/orders/availability.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -91,12 +92,27 @@ test('collection payment action requires actual-funds attestation and revision a
  const prior={...process.env};process.env.MANUAL_BALANCE_INSTALLED='true';let calls=0,authorised=false,outcome='saved';
  try{
  const{operateOrder}=await loadAction('../src/app/actions/order-operations.ts',{
- '@/lib/operations/telemetry':{observeOperation:(_name,fn)=>fn()},'node:crypto':{randomBytes,createHash},'@/lib/adminAuth':{verifyAdminAccess:async()=>{if(!authorised)throw Error('denied');return{email:'admin@example.test'};}},
+ '@/lib/operations/telemetry':{observeOperation:(_name,fn)=>fn()},'node:crypto':{randomBytes,createHash},'@/lib/orders/availability':{ORDER_CAPACITY_ERROR},'@/lib/adminAuth':{verifyAdminAccess:async()=>{if(!authorised)throw Error('denied');return{email:'admin@example.test'};}},
  '@/lib/orders/db':{orderDb:()=>({rpc:async(name,args)=>{calls++;assert.equal(name,'admin_balance_operation');assert.equal(args.p_actor,'admin@example.test');assert.equal(args.p_revision,3);assert.equal(args.p_funds_checked,true);assert.equal(args.p_amount,7000);return{data:outcome};}})},
  '@/lib/orders/validation':{moneyCents:value=>Math.round(Number(value)*100)},'next/cache':{revalidatePath:()=>{}},'next/server':{after:()=>{throw Error('no external work allowed');}},'./zoho':{updateDealStageInZoho:()=>{throw Error('no external work allowed');}},'@/lib/order-integrations/links':{sealLink}
  });
  const f=new FormData();f.set('id',randomUUID());f.set('operation','collection_payment');f.set('amount','70.00');f.set('reference','BANK');f.set('revision','3');
  assert.ok((await operateOrder({},f)).error);assert.equal(calls,0);authorised=true;assert.match((await operateOrder({},f)).error,/actual credited funds/);assert.equal(calls,0);f.set('funds_checked','on');f.delete('revision');assert.ok((await operateOrder({},f)).error);assert.equal(calls,0);f.set('revision','3');assert.match((await operateOrder({},f)).success,/separate identity/);outcome='already_paid';assert.match((await operateOrder({},f)).error,/already verified/);assert.equal(calls,2);
+ }finally{for(const k of Object.keys(process.env))if(!(k in prior))delete process.env[k];Object.assign(process.env,prior);}
+});
+test('deposit capacity failure is admin-only, shows reconciliation guidance and never reports confirmation success',async()=>{
+ const prior={...process.env};Object.assign(process.env,{ORDER_INTEGRATIONS_INSTALLED:'true'});let authorised=false,calls=0,errorMessage='BATCH_CAPACITY_EXCEEDED PRIVATE_DATABASE_TEXT';
+ try{
+ const{operateOrder}=await loadAction('../src/app/actions/order-operations.ts',{
+ '@/lib/operations/telemetry':{observeOperation:(_name,fn)=>fn()},'node:crypto':{randomBytes,createHash},'@/lib/orders/availability':{ORDER_CAPACITY_ERROR},
+ '@/lib/adminAuth':{verifyAdminAccess:async()=>{if(!authorised)throw Error('denied');return{email:'admin@example.test'};}},
+ '@/lib/orders/db':{orderDb:()=>({rpc:async(name,args)=>{calls++;assert.equal(name,'order_operation_with_email');assert.equal(args.p_amount,5950);assert.equal(args.p_actor,'admin@example.test');return{error:{message:errorMessage}};}})},
+ '@/lib/orders/validation':{moneyCents:value=>Math.round(Number(value)*100)},'next/cache':{revalidatePath:()=>{throw Error('must not report success');}},'next/server':{after:()=>{throw Error('no external work');}},'./zoho':{updateDealStageInZoho:()=>{throw Error('no external work');}},'@/lib/order-integrations/links':{sealLink}
+ });
+ const f=new FormData();f.set('id',randomUUID());f.set('operation','deposit');f.set('amount','59.50');f.set('reference','BANK-TEST');
+ assert.ok((await operateOrder({},f)).error);assert.equal(calls,0);authorised=true;
+ const failed=await operateOrder({},f);assert.equal(failed.error,ORDER_CAPACITY_ERROR);assert.equal(failed.success,undefined);assert.ok(!JSON.stringify(failed).includes('PRIVATE'));
+ errorMessage='PRIVATE_DATABASE_TEXT';assert.ok(!JSON.stringify(await operateOrder({},f)).includes('PRIVATE'));
  }finally{for(const k of Object.keys(process.env))if(!(k in prior))delete process.env[k];Object.assign(process.env,prior);}
 });
 test('manual rollout preserves legacy producers and collection mail when disabled, suppressing obsolete mail only when enabled',async()=>{
@@ -118,7 +134,7 @@ test('old payment action is denied for collection in manual mode, but delivery a
  const prior={...process.env};Object.assign(process.env,{MANUAL_BALANCE_INSTALLED:'true',ORDER_INTEGRATIONS_INSTALLED:'true'});let method='collection',readError=false,calls=0;
  try{
  const{operateOrder}=await loadAction('../src/app/actions/order-operations.ts',{
- '@/lib/operations/telemetry':{observeOperation:(_name,fn)=>fn()},'node:crypto':{randomBytes,createHash},'@/lib/adminAuth':{verifyAdminAccess:async()=>({email:'admin@example.test'})},
+ '@/lib/operations/telemetry':{observeOperation:(_name,fn)=>fn()},'node:crypto':{randomBytes,createHash},'@/lib/orders/availability':{ORDER_CAPACITY_ERROR},'@/lib/adminAuth':{verifyAdminAccess:async()=>({email:'admin@example.test'})},
  '@/lib/orders/db':{orderDb:()=>({from:()=>{const q={select:()=>q,eq:()=>q,single:async()=>readError?{error:{message:'private'}}:{data:{fulfilment_method:method}}};return q;},rpc:async()=>{calls++;return{data:null};}})},
  '@/lib/orders/validation':{moneyCents:()=>7000},'next/cache':{revalidatePath:()=>{}},'next/server':{after:()=>{}},'./zoho':{updateDealStageInZoho:()=>{}},'@/lib/order-integrations/links':{sealLink}
  });
