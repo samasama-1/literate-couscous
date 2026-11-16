@@ -45,4 +45,4 @@ Local tests cover pending requests, multi-unit final slots, repeat confirmations
 
 ## Separate work still required
 
-This implements the approved verified-only **capacity** rule. It does not configure the four production products, install their revised deposits/prices, replace percentage-based pricing tiers with their approved explicit thresholds, implement minimum-to-proceed approval, or resolve campaign contact ownership/retry work. See `campaign-product-sources.md` and `launch-copy-readiness-2026-11-16.md`; those remaining items must not be marked complete by this migration.
+This migration implements only the verified-only **capacity** rule. The subsequent [exact pricing/minimum implementation](batch-pricing-rollout-2026-11-16.md) is now prepared locally in a separate migration; apply it after this file and do not rerun this older view/RPC definition over it. Actual four-product configuration, deployment/acceptance and campaign contact ownership/retry work remain outstanding. See `campaign-product-sources.md` and `launch-copy-readiness-2026-11-16.md`; those remaining items must not be marked complete by this migration.

@@ -1,3 +1,5 @@
+import {batchPageTime} from '@/lib/batches/server';
+import {pricingConfigured} from '@/lib/batches/pricing';
 import {paymentConfig} from '@/lib/orders/payment-config';
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -12,11 +14,11 @@ export default async function JoinPage({ params }: { params: Promise<{ id: strin
   // Verify batch exists and is OPEN
   const { data: batch } = await supabase
     .from('batch_progress_view')
-    .select('batch_id, deposit_amount, status, product_id, remaining_capacity')
+    .select('*')
     .eq('batch_id', id)
     .single();
 
-  if (!batch || batch.status !== 'OPEN') {
+  if (!batch || batch.status !== 'OPEN' || Date.parse(batch.closes_at)<=batchPageTime().now) {
     notFound();
   }
 
@@ -40,7 +42,7 @@ export default async function JoinPage({ params }: { params: Promise<{ id: strin
         </p>
       </div>
 
-      {batch.remaining_capacity<=0?<p role="status">This batch has reached its verified order limit. Please contact <a href="mailto:hello@samasama.sg">hello@samasama.sg</a> before making any payment.</p>:<JoinGroupBuyForm discountEnabled={process.env.CAMPAIGN_DISCOUNTS_INSTALLED==='true'} collectionPolicyEnabled={process.env.FULFILMENT_V2_ENABLED==='true'} batchId={batch.batch_id} depositAmount={batch.deposit_amount} payment={paymentConfig()} />}
+      {!pricingConfigured(batch)?<p role="status">This batch is being prepared and is not accepting orders yet. Please contact <a href="mailto:hello@samasama.sg">hello@samasama.sg</a> before making payment.</p>:batch.remaining_capacity<=0?<p role="status">This batch has reached its verified order limit. Please contact <a href="mailto:hello@samasama.sg">hello@samasama.sg</a> before making any payment.</p>:<JoinGroupBuyForm discountEnabled={process.env.CAMPAIGN_DISCOUNTS_INSTALLED==='true'} collectionPolicyEnabled={process.env.FULFILMENT_V2_ENABLED==='true'} batchId={batch.batch_id} depositAmount={batch.deposit_amount} payment={paymentConfig()} />}
     </div>
   );
 }

@@ -42,6 +42,11 @@ export interface Database {
       batches: {
         Row: {
           admin_revision: number
+          minimum_verified_units: number | null
+          tier_2_start: number | null
+          tier_3_start: number | null
+          proceed_approved_at: string | null
+          proceed_verified_units: number | null
           id: string
           product_id: string
           status: 'OPEN' | 'CLOSED' | 'DELIVERED'
@@ -55,6 +60,11 @@ export interface Database {
           created_at: string
         }
         Insert: {
+          minimum_verified_units?: number | null
+          tier_2_start?: number | null
+          tier_3_start?: number | null
+          proceed_approved_at?: string | null
+          proceed_verified_units?: number | null
           id?: string
           product_id: string
           status?: 'OPEN' | 'CLOSED' | 'DELIVERED'
@@ -68,6 +78,11 @@ export interface Database {
           created_at?: string
         }
         Update: {
+          minimum_verified_units?: number | null
+          tier_2_start?: number | null
+          tier_3_start?: number | null
+          proceed_approved_at?: string | null
+          proceed_verified_units?: number | null
           id?: string
           product_id?: string
           status?: 'OPEN' | 'CLOSED' | 'DELIVERED'
@@ -610,6 +625,11 @@ export interface Database {
     Views: {
       batch_progress_view: {
         Row: {
+          minimum_verified_units: number | null
+          tier_2_start: number | null
+          tier_3_start: number | null
+          proceed_approved_at: string | null
+          proceed_verified_units: number | null
           batch_id: string
           product_id: string
           status: 'OPEN' | 'CLOSED' | 'DELIVERED'
@@ -627,6 +647,7 @@ export interface Database {
       }
     }
     Functions: {
+      admin_approve_batch: { Args: {p_id: string; p_revision: number; p_actor: string}; Returns: string }
       admin_save_batch: { Args: { p: Json }; Returns: string }
       admin_delete_empty_batch: { Args: { p_id: string; p_revision: number; p_confirmation: string }; Returns: string }
 

@@ -1,7 +1,9 @@
+import {batchPageTime} from '@/lib/batches/server';
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
+import {batchPricing} from '@/lib/batches/pricing';
 import CopyButton from "@/components/CopyButton";
 import { publicBatchUrl } from "@/lib/batches/validation";
 import SamaSamaStandardSummary from "@/components/SamaSamaStandardSummary";
@@ -83,25 +85,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-// TODO: Replace these presentation-only milestones with exact thresholds from a pricing_tiers table or per-batch tier configuration.
-function getTierMilestoneMarkers(targetCapacity: number, confirmedQuantity: number) {
-  const markers = [
-    { label: "T1", percent: 25, units: Math.ceil(targetCapacity * 0.25) },
-    { label: "T2", percent: 70, units: Math.ceil(targetCapacity * 0.70) },
-    { label: "Goal", percent: 100, units: targetCapacity },
-  ];
-  const nextMarker = markers.find((marker) => confirmedQuantity < marker.units);
-
-  return markers.map((marker) => ({
-    ...marker,
-    status: confirmedQuantity >= marker.units
-      ? "unlocked"
-      : nextMarker?.label === marker.label
-        ? "next"
-        : "locked",
-  }));
-}
-
 export default async function BatchDetailPage({ params }: PageProps) {
   const { id } = await params;
   
@@ -128,28 +111,13 @@ export default async function BatchDetailPage({ params }: PageProps) {
   }
 
   const progressPercent = Math.min(100, (batch.confirmed_quantity / batch.target_capacity) * 100);
-  const tierMarkers = getTierMilestoneMarkers(batch.target_capacity, batch.confirmed_quantity);
-
-  // Dynamic Tier Threshold Calculations
-  const t1Max = Math.floor(batch.target_capacity * 0.25);
-  const t2Max = Math.floor(batch.target_capacity * 0.70);
-  const t3Min = t2Max + 1;
-
-  // Determine current active price and active tier status
-  let currentPrice = batch.tier_1_price;
-  let activeTier = 1;
-  
-  if (batch.tier_3_price && batch.confirmed_quantity >= t3Min) {
-    currentPrice = batch.tier_3_price;
-    activeTier = 3;
-  } else if (batch.tier_2_price && batch.confirmed_quantity >= t1Max + 1) {
-    currentPrice = batch.tier_2_price;
-    activeTier = 2;
-  }
-
-  // Calculate savings percentage vs retail price if available
-  const retailPrice = product.retail_price || currentPrice * 1.5;
-  const savingsPercent = Math.round(((retailPrice - currentPrice) / retailPrice) * 100);
+  const pricing = batchPricing(batch,batch.confirmed_quantity);
+  const tierMarkers = pricing ? [...pricing.tiers.slice(1).map(t=>({label:`T${t.tier}`,units:t.start})),{label:'Limit',units:batch.target_capacity}].map(m=>({...m,percent:100*m.units/batch.target_capacity,status:batch.confirmed_quantity>=m.units?'unlocked':'locked'})) : [];
+  const currentPrice = pricing?.current.price ?? Number(batch.tier_1_price);
+  const activeTier = pricing?.current.tier ?? 0;
+  const retailPrice = product.retail_price && Number(product.retail_price)>currentPrice ? Number(product.retail_price) : null;
+  const savingsPercent = retailPrice ? Math.round(((retailPrice-currentPrice)/retailPrice)*100) : 0;
+  const acceptsOrders = !!pricing && batch.status==='OPEN' && Date.parse(batch.closes_at)>batchPageTime().now && batch.remaining_capacity>0;
   const standardEvaluation = getProductStandardEvaluation(product.id, product.features);
 
   return (
@@ -425,14 +393,14 @@ export default async function BatchDetailPage({ params }: PageProps) {
               
               <div style={{ display: "flex", alignItems: "baseline", gap: "1rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>
                 <span style={{ fontFamily: "var(--font-body)", fontSize: "2.5rem", fontWeight: 500, color: "var(--color-text)" }}>
-                  ${currentPrice}
+                  {pricing ? `S$${currentPrice.toFixed(2)}` : 'Pricing being prepared'}
                 </span>
-                {retailPrice && (
+                {pricing && retailPrice && (
                   <span style={{ textDecoration: "line-through", color: "var(--color-text-light)", fontSize: "var(--text-lg)" }}>
                     ${retailPrice}
                   </span>
                 )}
-                <span className="badge-savings">SAVE {savingsPercent}%</span>
+                {pricing && retailPrice && <span className="badge-savings">SAVE {savingsPercent}%</span>}
               </div>
 
               {/* Progress Tracker */}
@@ -465,18 +433,16 @@ export default async function BatchDetailPage({ params }: PageProps) {
               </div>
 
               <p style={{ fontSize: "var(--text-xs)", color: "var(--color-primary-muted)", margin: 0, fontFamily: "var(--font-body)" }}>
-                {activeTier === 3 ? (
-                  "🎉 Maximum savings unlocked! Everyone gets the lowest tier price."
-                ) : activeTier === 2 ? (
-                  `Unlock the final tier price ($${batch.tier_3_price || batch.tier_2_price}) at ${t3Min} units.`
-                ) : (
-                  `Unlock the Tier 2 price ($${batch.tier_2_price || batch.tier_1_price}) at ${t1Max + 1} units.`
-                )}
+                {!pricing ? 'Pricing thresholds are being confirmed. Please do not transfer a deposit yet.' : pricing.next ? `Tier ${pricing.next.tier}: S$${pricing.next.price.toFixed(2)} per unit at ${pricing.next.start} verified units.` : 'The final configured tier has been reached. Final pricing still requires SamaSama confirmation.'}
               </p>
             </div>
 
+            {pricing && <p style={{color:'var(--color-text-muted)',fontSize:'var(--text-sm)',marginBottom:'1.5rem'}}>
+              Minimum to proceed: <strong>{batch.minimum_verified_units} verified units</strong>. {pricing.minimumMet ? batch.proceed_approved_at ? 'Participation minimum met and SamaSama approval recorded.' : 'Participation minimum met; awaiting SamaSama approval.' : `${pricing.unitsToMinimum} more verified units needed.`} Reaching this minimum does not automatically close the batch or confirm a final price. Only verified deposits count; pending requests do not reserve units.
+            </p>}
+
             {/* CTA Buy Action */}
-            {batch.status === 'OPEN' && batch.remaining_capacity > 0 ? (
+            {acceptsOrders ? (
               <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem" }}>
                 <Link 
                   href={`/group-buys/${batch.batch_id}/join`} 
@@ -495,7 +461,7 @@ export default async function BatchDetailPage({ params }: PageProps) {
               </div>
             ) : (
               <button className="btn btn-secondary btn-lg" disabled style={{ width: "100%", marginBottom: "2rem" }}>
-                {batch.status === 'OPEN' ? 'Batch full · verified order limit reached' : 'Batch Closed'}
+                {!pricing ? 'Batch being prepared' : batch.remaining_capacity<=0 ? 'Batch full · verified order limit reached' : 'Batch Closed'}
               </button>
             )}
 
@@ -529,64 +495,16 @@ export default async function BatchDetailPage({ params }: PageProps) {
             Transparent Pricing Tiers
           </h2>
           <p style={{ color: "var(--color-primary-muted)", fontSize: "var(--text-md)", maxWidth: "600px", marginBottom: "2.5rem" }}>
-            The more people join, the cheaper the price gets for everyone. Once a tier is reached, all previous buyers are credited the difference when the batch closes.
+            Tier prices follow verified unit counts. SamaSama confirms the final price before the remaining balance is collected. Your deposit stays unchanged; eligible discounts are applied separately to the final quote.
           </p>
 
-          <table className="tier-table">
-            <thead>
-              <tr>
-                <th>Milestone Unit Count</th>
-                <th>Price Per Unit</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* Tier 1 */}
-              <tr>
-                <td>1 &ndash; {t1Max} units</td>
-                <td>${batch.tier_1_price}</td>
-                <td>
-                  {activeTier >= 2 ? (
-                    <span className="status-badge" style={{ color: "var(--color-success)" }}>✓ Unlocked</span>
-                  ) : (
-                    <span className="status-badge" style={{ color: "var(--color-primary)" }}>● Active</span>
-                  )}
-                </td>
-              </tr>
-              
-              {/* Tier 2 */}
-              {batch.tier_2_price && (
-                <tr>
-                  <td>{t1Max + 1} &ndash; {t2Max} units</td>
-                  <td>${batch.tier_2_price}</td>
-                  <td>
-                    {activeTier >= 3 ? (
-                      <span className="status-badge" style={{ color: "var(--color-success)" }}>✓ Unlocked</span>
-                    ) : activeTier === 2 ? (
-                      <span className="status-badge" style={{ color: "var(--color-primary)" }}>● Active</span>
-                    ) : (
-                      <span className="status-badge" style={{ color: "var(--color-text-light)" }}>🔒 Locked</span>
-                    )}
-                  </td>
-                </tr>
-              )}
-
-              {/* Tier 3 */}
-              {batch.tier_3_price && (
-                <tr>
-                  <td>{t3Min}+ units</td>
-                  <td>${batch.tier_3_price}</td>
-                  <td>
-                    {activeTier === 3 ? (
-                      <span className="status-badge" style={{ color: "var(--color-primary)" }}>● Active</span>
-                    ) : (
-                      <span className="status-badge" style={{ color: "var(--color-text-light)" }}>🔒 Locked</span>
-                    )}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          {pricing ? <table className="tier-table">
+            <thead><tr><th>Verified unit count</th><th>Price per unit</th><th>Status</th></tr></thead>
+            <tbody>{pricing.tiers.map(t=><tr key={t.tier}>
+              <td>{t.start} &ndash; {t.end} units</td><td>S${t.price.toFixed(2)}</td>
+              <td><span className="status-badge" style={{color:t.tier===activeTier?'var(--color-primary)':'var(--color-text-muted)'}}>{t.tier===activeTier?'Current tier':t.tier<activeTier?'Reached':'Not reached'}</span></td>
+            </tr>)}</tbody>
+          </table> : <p>Exact pricing thresholds are being prepared. Please contact <a href="mailto:hello@samasama.sg">hello@samasama.sg</a> before making any payment.</p>}
         </div>
 
         {/* SECTION 3: Community & Referral Widget Row */}

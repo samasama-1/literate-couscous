@@ -60,6 +60,7 @@ export async function joinGroupBuy(formData: {
     order_code:orderCode,batch_id:batchId,customer_name:name,customer_phone:phone,customer_email:email,quantity,...address,...(v2?{policy_accepted:true,collection_policy_version:COLLECTION_POLICY_VERSION}:{})
   }});
   if(insertError || !registered){
+    if(insertError?.message.includes('BATCH_PRICING_UNCONFIGURED'))return {error:'This batch is being prepared and is not accepting orders yet. Please contact hello@samasama.sg before making payment.'};
     if(insertError?.message.includes('BATCH_CAPACITY_EXCEEDED'))return {error:'There are not enough units available for this quantity. No new order was saved. Please contact hello@samasama.sg before making payment.'};
     if(insertError?.message.includes('DISCOUNT_MINIMUM'))return {error:'Campaign codes apply only to products priced at S$50 or more per unit before discount.'};
     if(insertError?.message.includes('DISCOUNT_'))return {error:'This code is unavailable for this order. Check its expiry and use the email address you registered with, or contact support.'};

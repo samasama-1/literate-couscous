@@ -6,6 +6,10 @@ import {redirect} from 'next/navigation';
 import {parseBatch, uuid} from '@/lib/batches/validation';
 export type BatchResult = {error?: string; success?: string; id?: string; deleted?: boolean};
 const messages: Record<string, string> = {
+  INVALID_BATCH_PRICING: 'Check the minimum and exact tier starts against the hard limit and optional tier prices.',
+  BATCH_PRICING_LOCKED: 'Tier starts and the minimum are locked once an order exists. Keep historical terms; create a new launch batch or request a separate review.',
+  BATCH_MINIMUM_NOT_MET: 'The current verified unit count is below the minimum. Refresh and review participation.',
+  BATCH_PRICING_UNCONFIGURED: 'Configure this batch’s tier starts and minimum before approving it.',
   BATCH_CHANGED: 'Another administrator changed this batch. Refresh before editing again.',
   BATCH_NOT_FOUND: 'This batch no longer exists.',
   BATCH_PRICES_LOCKED: 'This batch has orders. Deposit and tier prices are locked; create a new batch for new pricing.',
@@ -19,7 +23,20 @@ const messages: Record<string, string> = {
 };
 function failure(message: string) {
   return Object.entries(messages).find(([code]) => message.includes(code))?.[1]
-    || 'Could not save. Confirm batch_management.sql has been applied, then refresh and try again.';
+    || 'Could not save. Confirm the latest batch pricing SQL has been applied, then refresh and try again.';
+}
+export async function approveBatch(_previous: BatchResult, form: FormData): Promise<BatchResult> {
+  let admin;
+  try { admin=await verifyAdminAccess(); } catch { return {error:'Sign in as an approved administrator.'}; }
+  const id=String(form.get('id')||''),rawRevision=String(form.get('revision')||''),revision=Number(rawRevision);
+  if(!uuid.test(id)||!/^\d+$/.test(rawRevision)||!Number.isSafeInteger(revision)||revision<1||form.get('confirmed')!=='on')return {error:'Review this batch and confirm the proceed decision.'};
+  try {
+    const {data,error}=await supabaseAdmin.rpc('admin_approve_batch',{p_id:id,p_revision:revision,p_actor:admin.email});
+    if(error)return {error:failure(error.message)};
+    if(data!=='approved'&&data!=='already_approved')return {error:'Approval could not be confirmed. Refresh before retrying.'};
+    refresh(id);
+    return {success:data==='already_approved'?'Approval was already recorded. Refresh to check its current participation.':'Proceed approval recorded. No final prices, supplier orders or emails were created.'};
+  } catch {return {error:'Could not confirm approval. Refresh and review the current batch.'};}
 }
 function refresh(id: string) {
   for (const path of ['/', '/admin', '/admin/batches', `/admin/batches/${id}`, `/group-buys/${id}`, `/group-buys/${id}/join`]) revalidatePath(path);

@@ -33,6 +33,7 @@ export default async function OrderDetail({params}:{params:Promise<{id:string}>}
  return <AdminWorkspace>
  <Link href="/admin" className={styles.backLink}>← Back to order book</Link>
  <header className={styles.heading}><div><div className={styles.eyebrow}>ORDER DETAILS</div><h1>{o.order_code}</h1><p>{product?.name || 'Product unavailable'} · {o.quantity} unit(s) · Batch {o.batch_id.slice(0,8)}</p></div><span className={`${styles.badge} ${styles[badge.tone]}`}>{badge.label}</span></header>
+ {batch?.minimum_verified_units!=null&&<p className={styles.notice}>Batch minimum: {batch.minimum_verified_units} verified units. {batch.proceed_approved_at?'Proceed approval recorded. New quotes also require the minimum to remain met.':'Proceed approval is required before a final quote can be saved.'} <Link href={`/admin/batches/${o.batch_id}`}>Review participation and approve batch →</Link> Final prices remain an admin decision.</p>}
  <div className={styles.detailGrid}>
  <div className={styles.panel}>
  <section className={styles.detailSection}><h2>Customer & fulfilment</h2><dl className={styles.descriptionList}>
