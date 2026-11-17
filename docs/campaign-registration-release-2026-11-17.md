@@ -1,3 +1,5 @@
+> Subsequent policy revision: new promotional codes require explicit email subscription. See [follow-up migration and acceptance plan](campaign-marketing-offer-2026-11-17.md). Apply its SQL last; earlier no-consent reward checks below describe the superseded policy, not the new offer.
+
 # Campaign registration release — SQL and settings handoff
 
 Prepared 17 November 2026. Marcus approved committing and SQL preparation, not remote execution, pushing or deployment. Campaign/email/terms appearance is accepted for this preparation; supplier evidence and actual saved live-campaign content remain separate launch checks.
@@ -7,6 +9,8 @@ Prepared 17 November 2026. Marcus approved committing and SQL preparation, not r
 Single-step registration → one acknowledgement containing an eligible original personal code; optional initial marketing choice; protected existing contact/pick/unsubscribe state; ten-minute repeat-email cooldown; bounded known-unsent retries in the authenticated existing email worker; admin email report; formatted email/image and offer terms; corrected local preview prices. No reconfirmation, OTP, new scheduler, fee activation or payment/collection change.
 
 ## SQL: exact order
+
+**17 November missing-runtime follow-up:** the owner’s SQL results showed all three runtime objects missing. The compatible runtime → campaign-safety installation order has now been tested locally; use [the missing-runtime fix](missing-runtime-fix-2026-11-17.md) before the checks below. This supersedes the earlier instruction to stop solely because the runtime is absent; other missing baseline prerequisites still require review.
 
 Use Supabase SQL Editor in the intended SamaSama project, role **postgres**. Confirm the project yourself; no remote state was inspected during preparation. Run each file in full as its own query. Do not replace a file's contents or paste keys into SQL.
 

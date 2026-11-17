@@ -72,7 +72,7 @@ export default function CampaignLanding({campaign,products,preview=false,discoun
             <div className="campaign-trust-row" aria-label="Campaign notes">
               <span>No payment to register</span>
               <span>Your interest guides our shortlist</span>
-              <span>Marketing is optional</span>
+              <span>{discountOffer ? "Subscribe by email for the reward" : "Marketing is optional"}</span>
             </div>
           </section>
 

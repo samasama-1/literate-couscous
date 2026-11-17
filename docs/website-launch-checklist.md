@@ -6,6 +6,10 @@ Updated 17 November 2026 · Asia/Singapore · working launch register
 
 Owners: **Build** = implementation/testing; **Marcus** = content, commercial/provider decisions and approval; **Admins** = day-to-day operational checks; **Joint** = controlled acceptance and release.
 
+## Promotional subscription revision — 17 November
+
+Marcus subsequently approved making email marketing consent a condition of **new** promotional code issuance. This supersedes optional-marketing/coupon-independent wording below for the new offer only. Local implementation and rollout: [campaign marketing offer](campaign-marketing-offer-2026-11-17.md). Required unchecked email-only consent, versioned evidence and SQL issuance gates are prepared. Existing unsubscribe protection, issued code validity and non-promotional purchase access remain. Apply the follow-up SQL **after** campaign safety; no remote change or activation has been performed. Controlled inbox/CRM acceptance remains pending.
+
 ## Current position and next actions — 16 November
 
 Commit/SQL preparation — 17 November: the [release handoff](campaign-registration-release-2026-11-17.md) now contains the exact preflight → new campaign migration → postcheck sequence, settings/deployment order and stop/recovery procedure. 128 local tests, TypeScript, lint, production webpack build and diff checks passed. Preparation/commit approval does not authorize a push, remote SQL or deployment; public opening and real inbox/CRM acceptance remain pending.

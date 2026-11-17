@@ -30,7 +30,7 @@ export function campaignAcknowledgement(input:{name:string;price:string;coupon?:
   {text:`Questions about ${name} or the process?`},
   {text:'Reply to this email—we’re happy to help.'},
   {text:'Thanks for being part of the journey,\nThe SamaSama team'},
-  {text:'Marketing updates are optional and follow your chosen preferences.'},
+  {text:'You can unsubscribe from email marketing anytime. Unsubscribing does not invalidate an already-issued code or extend its original expiry. Existing unsubscribe preferences are preserved.'},
   {text:'Manage marketing preferences',href:unsubscribeUrl},
  );
  return {

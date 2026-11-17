@@ -165,3 +165,37 @@ test('public V2 registration does not return existing-contact flags or private c
   const result=await api.submitCampaignIntent({});assert.equal(result.success,true);assert.equal(result.alreadyRegistered,false);assert.equal(result.verificationPending,undefined);assert.equal(sent.p_verification,undefined);assert.equal(result.emailStatus,'queued');assert.equal(Object.keys(sent).sort().join(','),'p,p_coupon');
  }finally{for(const k of Object.keys(process.env))if(!(k in previous))delete process.env[k];Object.assign(process.env,previous);}
 });
+
+test('promotional email consent is enforced in SQL, versioned, and never reverses opt-outs or revokes issued coupons',async()=>{
+ const{db,submit,contact,p}=await fixture();try{
+  const migration=await readFile(new URL('../database/sql/campaign_marketing_offer.sql',import.meta.url),'utf8');
+  const wording=await load('../src/lib/campaigns/consent.ts',{});
+  assert.ok(migration.includes(wording.campaignConsentVersion));assert.ok(migration.includes(wording.campaignConsentText));
+  await db.exec(migration);await db.exec(migration);
+  for(const changes of [{marketing_consent:false},{marketing_consent:true},{marketing_consent:true,marketing_consent_version:'old'}]){
+   await assert.rejects(submit(changes),/MARKETING_CONSENT_REQUIRED/);
+  }
+  assert.equal((await db.query('SELECT count(*)::int n FROM contacts')).rows[0].n,0);
+  // Base RPC cannot bypass the promotion gate either.
+  await assert.rejects(db.query('SELECT register_campaign_intent($1)',[p({marketing_consent:false})]),/MARKETING_CONSENT_REQUIRED/);
+  const consent={marketing_consent:true,marketing_consent_version:'campaign-email-offer-2026-11-17'};
+  const first=await submit(consent);const ct=await contact();
+  const coupon=(await db.query('SELECT id,expires_at,status FROM campaign_discount_codes')).rows[0];assert.ok(coupon.id);
+  const evidence=(await db.query("SELECT metadata,created_at FROM funnel_events WHERE event_type='intent_submitted'")).rows[0];
+  assert.equal(evidence.metadata.consent_version,consent.marketing_consent_version);assert.equal(evidence.metadata.consent_scope,'email-marketing');
+  assert.match(evidence.metadata.consent_text,/subscription is required/);assert.ok(evidence.created_at);assert.match(ct.consent_source,/campaign-email-offer-2026-11-17/);
+  await db.query('SELECT unsubscribe_campaign_contact($1)',[ct.id]);const optedOut=await contact();
+  const repeat=await submit(consent);assert.equal(repeat.result.cooldown,true);assert.deepEqual(await contact(),optedOut);
+  assert.deepEqual((await db.query('SELECT id,expires_at,status FROM campaign_discount_codes')).rows[0],coupon);
+  // Previously unsubscribed address without a code must not receive a new award.
+  await db.query("INSERT INTO contacts(email,email_normalized,marketing_consent,unsubscribed_at)VALUES('old@example.test','old@example.test',false,now())");
+  await submit({...consent,email:'old@example.test'});
+  assert.equal((await db.query("SELECT count(*)::int n FROM campaign_discount_codes WHERE email_normalized='old@example.test'")).rows[0].n,0);
+  const old=(await db.query("SELECT marketing_consent,unsubscribed_at FROM contacts WHERE email_normalized='old@example.test'")).rows[0];assert.equal(old.marketing_consent,false);assert.ok(old.unsubscribed_at);
+  // Non-promotional registration remains available when offer issuance is disabled.
+  await db.query("SELECT configure_campaign_discount(false,'admin@example.test')");await submit({email:'plain@example.test',marketing_consent:false});
+  assert.equal((await db.query("SELECT count(*)::int n FROM campaign_discount_codes WHERE email_normalized='plain@example.test'")).rows[0].n,0);
+  const acl=(await db.query("SELECT has_function_privilege('anon','register_campaign_intent(jsonb)','EXECUTE') a,has_function_privilege('authenticated','register_campaign_intent_discount(jsonb,jsonb)','EXECUTE') b,has_function_privilege('service_role','register_campaign_intent_discount(jsonb,jsonb)','EXECUTE') s")).rows[0];assert.deepEqual(acl,{a:false,b:false,s:true});
+  const replay=(await db.query('SELECT register_campaign_intent_v2($1,NULL)r',[first.input])).rows[0].r;assert.deepEqual(replay,first.result);
+ }finally{await db.close();}
+});

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { campaignConsentVersion, campaignConsentText } from "@/lib/campaigns/consent";
 import Link from "next/link";
 import { submitCampaignIntent, startCampaignSession } from "@/app/actions/campaigns";
 import { formatMoney, getSpecs } from "@/lib/campaigns/utils";
@@ -118,6 +119,10 @@ export default function CampaignIntentForm({discountOffer=false, campaign, produ
       return;
     }
 
+    if (discountOffer && !marketingConsent) {
+      setState({status:"error",message:"Please agree to email updates to receive the promotional code."});
+      return;
+    }
     if (preview) {
       setState({status:"success",productName:selectedProduct.public_name,intent,alreadyRegistered:false,emailStatus:"test"});
       return;
@@ -138,6 +143,7 @@ export default function CampaignIntentForm({discountOffer=false, campaign, produ
       phone,
       telegramHandle: telegram,
       marketingConsent,
+      marketingConsentVersion: marketingConsent ? campaignConsentVersion : null,
       attribution: attributionRef.current,
       company,
     });
@@ -177,7 +183,7 @@ export default function CampaignIntentForm({discountOffer=false, campaign, produ
         </p>
         {state.emailStatus === "test" ? <p className="campaign-note">{preview ? "Preview complete. Nothing was saved and no email was sent." : "This is a test registration. No confirmation email was sent."}</p> : state.emailStatus !== "sent" && <p className="campaign-note">Your request was received. Check your latest acknowledgement email. A new email may still be queued.</p>}
         {discountOffer&&!preview&&<p>Eligible new registrations receive their personal reward code in the confirmation email. Check your inbox and spam folder; repeat registrations do not create a new code.</p>}
-        {!preview && <p>Check your inbox for your acknowledgement and any eligible personal discount code. No further confirmation is needed. Repeated submissions within ten minutes do not create another email. Marketing updates are optional and follow your existing preferences. Contact hello@samasama.sg to change an existing registration.</p>}
+        {!preview && <p>Check your inbox for your acknowledgement and any eligible personal discount code. No further confirmation is needed. Repeated submissions within ten minutes do not create another email. You can unsubscribe from email marketing anytime; an already-issued code keeps its original validity. Existing unsubscribe preferences are preserved. Contact hello@samasama.sg to change an existing registration.</p>}
         <Link className="btn btn-secondary" href="/">
           Back to SamaSama
         </Link>
@@ -237,7 +243,7 @@ export default function CampaignIntentForm({discountOffer=false, campaign, produ
         <section ref={intentRef} className="campaign-shell campaign-intent">
           <p className="section-label">Product interest</p>
           <h2>Register your interest in {selectedProduct.public_name}</h2>
-          {discountOffer&&<p className="campaign-note">New eligible registrations receive a personal first-order code by email: S$10 off each eligible unit in your first order, up to 10 units, on any SamaSama product priced at S$50 or more per unit before discount. Valid for six calendar months from issue. Your deposit stays unchanged; the discount reduces your final balance. No further confirmation is needed. <Link href="/campaign-offer-terms">Read the offer terms</Link>.</p>}
+          {discountOffer&&<p className="campaign-note">Subscribe to SamaSama email updates and register your interest to receive an eligible personal first-order code by email: S$10 off each eligible unit in your first order, up to 10 units, on any SamaSama product priced at S$50 or more per unit before discount. Valid for six calendar months from issue. Your deposit stays unchanged; the discount reduces your final balance. You can purchase at normal prices without subscribing. Unsubscribing does not invalidate an already-issued code. No further confirmation is needed. <Link href="/campaign-offer-terms">Read the offer terms</Link>.</p>}
           <p>Submitting your pick tells us you’re interested in this product and helps us decide what to bring in next. No purchase or payment is required.</p>
 
           <div className="campaign-contact-grid">
@@ -256,9 +262,9 @@ export default function CampaignIntentForm({discountOffer=false, campaign, produ
           </div>
 
           <label className="campaign-consent">
-            <input type="checkbox" checked={marketingConsent} onChange={(event) => setMarketingConsent(event.target.checked)} />
+            <input type="checkbox" required={discountOffer} checked={marketingConsent} onChange={(event) => setMarketingConsent(event.target.checked)} />
             <span>
-              I&apos;d like to receive updates about this product and future SamaSama launches. I can unsubscribe anytime. See our{" "}
+              {discountOffer ? campaignConsentText : "I’d like to receive email updates about SamaSama product launches, sourcing progress and offers. I can unsubscribe anytime."} See our{" "}
               <Link href="/privacy">Privacy Policy</Link>.
             </span>
           </label>
@@ -268,7 +274,7 @@ export default function CampaignIntentForm({discountOffer=false, campaign, produ
           {state.status === "error" && <div className="campaign-error">{state.message}</div>}
 
           <button type="submit" className="btn btn-primary btn-lg campaign-submit" disabled={state.status === "submitting"}>
-            {state.status === "submitting" ? "Recording..." : campaign.cta_text || "Register my pick"}
+            {state.status === "submitting" ? "Recording..." : discountOffer ? "Subscribe and get my code" : campaign.cta_text || "Register my pick"}
           </button>
         </section>
       )}

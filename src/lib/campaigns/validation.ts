@@ -33,6 +33,7 @@ export function parseIntent(value: unknown) {
   return {
     email, campaign_slug:text(raw.campaignSlug,120,true), product_id:uuid(raw.campaignProductId), request_id:uuid(raw.requestId),
     purchase_intent:raw.purchaseIntent as 'yes'|'no', marketing_consent:raw.marketingConsent,
+    marketing_consent_version:text(raw.marketingConsentVersion,80),
     phone:text(raw.phone,40), telegram_handle:text(raw.telegramHandle,64),
     price_shown_cents:Number(raw.priceShownCents), currency:text(raw.currency,3,true), attribution:attribution(raw.attribution),
   };

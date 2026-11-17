@@ -6,7 +6,8 @@ export const campaignOfferTerms:PolicyDocument={
  body:`Last updated: 17 November 2026
 1. Your campaign thank-you code
 Eligible new interest registrations in participating SamaSama campaigns receive a personal first-order code while the offer is active. Registration is free: it is not an order, payment, reservation of stock or guarantee that a product will launch.
-Marketing is optional. You do not need to subscribe to marketing or complete another confirmation step to receive an eligible code.
+For new promotional registrations, you must explicitly agree to receive email updates about SamaSama product launches, sourcing progress and offers to qualify for a new code. The checkbox is not preselected. You may purchase at normal prices without subscribing. No additional confirmation step is required.
+You can unsubscribe anytime. Withdrawal stops marketing and does not invalidate an already-issued code or extend its original expiry. Earlier issued codes retain their original terms. Supplying a phone number or Telegram handle does not authorize marketing through those channels. Existing unsubscribe preferences are not reversed by this public form; contact hello@samasama.sg for help with an existing registration.
 One personal code is issued per registration email across this reward programme. Repeated registrations do not create additional codes or extend validity. The offer is not applied retrospectively to earlier registrations or existing orders.
 2. What you can save
 Your code gives S$10 off each eligible unit in your first order, up to 10 units. Ten eligible units receive S$100 off in total. Repeated units of the same product each qualify.

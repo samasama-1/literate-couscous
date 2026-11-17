@@ -25,6 +25,7 @@ export async function submitCampaignIntent(value: unknown) {
     const {data,error} = safeRegistration?await orderDb().rpc('register_campaign_intent_v2',{p:{...input,session_id:session},p_coupon:candidate}):discounts?await orderDb().rpc('register_campaign_intent_discount',{p:{...input,session_id:session},p_coupon:candidate}):await supabaseAdmin.rpc('register_campaign_intent',{p:{...input,session_id:session}});
     if (error) {
       const messages: Record<string,string> = {
+        MARKETING_CONSENT_REQUIRED:'Please agree to email updates using the current form to receive the promotional code. Refresh the page and try again.',
         PRICE_CHANGED:'The estimated price changed. Refresh the page and confirm your pick at the new price.',
         PAID_RESPONSE_LOCKED:'This pick is linked to a payment. Please contact SamaSama to change it.',
         CAMPAIGN_INACTIVE:'This campaign is not accepting registrations right now.',
