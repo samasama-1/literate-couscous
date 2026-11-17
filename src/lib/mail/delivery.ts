@@ -29,7 +29,7 @@ export async function deliverOnce({job, provider, store, buildMessage, prepare, 
     blocked = 'Retry stopped after 23 hours. Check the provider log before arranging a resend.';
   else if (job.attempted_at && (job.provider || 'resend') !== provider)
     blocked = 'Provider changed after an email attempt. Reconcile the original provider before arranging a resend.';
-  else if (job.attempted_at && provider === 'zoho' && metadata._mail_outcome !== 'not_sent')
+  else if (job.attempted_at && provider === 'zoho' && metadata._mail_outcome !== 'not_sent' && metadata._mail_outcome !== 'preparing')
     blocked = 'Zoho send outcome requires review. Check Zoho Sent/provider records; another send is blocked to prevent duplicates.';
   if (blocked) { await store.block(job, blocked); return 'failed'; }
   // Resend must retain the original attempt time and immutable idempotency key.

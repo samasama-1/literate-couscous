@@ -31,7 +31,7 @@ test('real PostgreSQL migrations and campaign workflows',async t=>{
   const content={...demoCampaign,id:null,slug:'test-fixture',is_test:false,products:demoProducts.map(p=>({...p,id:null}))};
   const cid=await call('save_campaign_content',content);
   const opts=(await db.query('SELECT * FROM campaign_products WHERE campaign_id=$1 ORDER BY display_order',[cid])).rows;
-  const base={email:' Buyer@Example.com ',campaign_slug:content.slug,product_id:opts[1].id,price_shown_cents:10900,currency:'SGD',purchase_intent:'yes',marketing_consent:false,session_id:randomUUID(),attribution:{utm_source:'tiktok',utm_campaign:'launch',utm_content:'creative-a',first_touch_source:'tiktok',latest_touch_source:'tiktok'}};
+  const base={email:' Buyer@Example.com ',campaign_slug:content.slug,product_id:opts[1].id,price_shown_cents:opts[1].estimated_price_cents,currency:'SGD',purchase_intent:'yes',marketing_consent:false,session_id:randomUUID(),attribution:{utm_source:'tiktok',utm_campaign:'launch',utm_content:'creative-a',first_touch_source:'tiktok',latest_touch_source:'tiktok'}};
   const submit=(overrides={})=>call('register_campaign_intent',{...base,request_id:randomUUID(),...overrides});
   let first;
   await t.test('anonymous views and selections link to the registered lead',async()=>{
@@ -57,12 +57,12 @@ test('real PostgreSQL migrations and campaign workflows',async t=>{
     assert.equal((await db.query('SELECT status FROM campaign_crm_sync WHERE contact_id=$1',[cid])).rows[0].status,'failed');
   });
   await t.test('changed vote preserves first touch and records old/new values',async()=>{
-    const result=await submit({product_id:opts[2].id,price_shown_cents:21900,purchase_intent:'maybe',attribution:{utm_source:'instagram',latest_touch_source:'instagram'}});
+    const result=await submit({product_id:opts[2].id,price_shown_cents:opts[2].estimated_price_cents,purchase_intent:'maybe',attribution:{utm_source:'instagram',latest_touch_source:'instagram'}});
     assert.equal(result.lead_id,first.lead_id); assert.equal(result.already_registered,true);
     const lead=(await db.query('SELECT * FROM campaign_leads')).rows[0];
     assert.equal(lead.utm_source,'tiktok');assert.equal(lead.latest_touch_source,'instagram');assert.equal(lead.selected_campaign_product_id,opts[2].id);
     const event=(await db.query("SELECT metadata FROM funnel_events WHERE event_type='intent_updated' ORDER BY created_at DESC LIMIT 1")).rows[0].metadata;
-    assert.equal(event.previous_product_id,opts[1].id);assert.equal(event.previous_price_cents,10900);assert.equal(event.price_shown_cents,21900);
+    assert.equal(event.previous_product_id,opts[1].id);assert.equal(event.previous_price_cents,opts[1].estimated_price_cents);assert.equal(event.price_shown_cents,opts[2].estimated_price_cents);
   });
   await t.test('request retries do not duplicate emails or events',async()=>{
     const key=randomUUID();const a=await submit({request_id:key});
@@ -90,7 +90,7 @@ test('real PostgreSQL migrations and campaign workflows',async t=>{
     await submit();
     assert.equal((await db.query('SELECT funnel_status FROM campaign_leads WHERE id=$1',[first.lead_id])).rows[0].funnel_status,'reservation_invited');
     await db.query("UPDATE campaign_leads SET funnel_status='reserved' WHERE id=$1",[first.lead_id]);
-    await assert.rejects(submit({product_id:opts[0].id,price_shown_cents:9900}),/PAID_RESPONSE_LOCKED/);
+    await assert.rejects(submit({product_id:opts[0].id,price_shown_cents:opts[0].estimated_price_cents}),/PAID_RESPONSE_LOCKED/);
     await submit();
     assert.equal((await db.query('SELECT funnel_status FROM campaign_leads WHERE id=$1',[first.lead_id])).rows[0].funnel_status,'reserved');
   });
@@ -111,7 +111,7 @@ test('real PostgreSQL migrations and campaign workflows',async t=>{
     const testId=await call('save_campaign_content',{...content,slug:'test-only',is_test:true});
     const testOptions=(await db.query('SELECT * FROM campaign_products WHERE campaign_id=$1 ORDER BY display_order',[testId])).rows;
     assert.equal(testOptions.length,4);
-    const result=await submit({campaign_slug:'test-only',product_id:testOptions[0].id,price_shown_cents:9900});
+    const result=await submit({campaign_slug:'test-only',product_id:testOptions[0].id,price_shown_cents:testOptions[0].estimated_price_cents});
     assert.equal(result.is_test,true);assert.equal(result.delivery_id,null);
     await call('save_campaign_content',{...content,id:testId,slug:'test-only',is_test:false,products:[]});
     assert.equal((await db.query('SELECT is_test FROM campaigns WHERE id=$1',[testId])).rows[0].is_test,true);

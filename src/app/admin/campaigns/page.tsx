@@ -73,6 +73,7 @@ export default async function AdminCampaignsPage({ searchParams }: PageProps) {
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
           <Link href="/admin/campaigns/manage" className="btn btn-primary btn-sm">Manage campaign pages</Link>
           <Link href="/admin" className="btn btn-secondary btn-sm">Orders admin</Link>
+          <Link href="/admin/campaigns/mail" className="btn btn-secondary btn-sm">Acknowledgement emails</Link>
           <Link href={exportHref} className="btn btn-primary btn-sm">Export CSV</Link>
         </div>
       </div>

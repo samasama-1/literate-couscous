@@ -70,9 +70,9 @@ export default function CampaignLanding({campaign,products,preview=false,discoun
               {campaign.subheadline || "SamaSama visited manufacturers, shortlisted products we would actually consider bringing to Singapore, and now we want to know what you genuinely want."}
             </p>
             <div className="campaign-trust-row" aria-label="Campaign notes">
-              <span>No commitment</span>
-              <span>You choose the next drop</span>
-              <span>First access if it launches</span>
+              <span>No payment to register</span>
+              <span>Your interest guides our shortlist</span>
+              <span>Marketing is optional</span>
             </div>
           </section>
 

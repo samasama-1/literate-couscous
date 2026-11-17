@@ -1,6 +1,6 @@
 # Internal shortlist source register
 
-Historical evidence recorded 22 September 2026; planned lineup updated 16 November 2026. Internal reference only; do not copy supplier names, model codes or this document into public campaign fields without approval.
+Historical evidence recorded 22 September 2026; planned lineup updated 16 November 2026; local preview aligned 17 November 2026. Internal reference only; do not copy supplier names, model codes or this document into public campaign fields without approval.
 
 ## Planned launch lineup — confirmed 16 November
 
@@ -39,7 +39,7 @@ Ranges are inclusive and refer to verified units, not interest submissions or cu
 | Single Stack Steamer/Airfryer | 1–461 units · S$219 | 462–782 units · S$209 | 783–1,103 units · S$199 | 1,103 |
 | Double Stack Steamer/Airfryer | 1–490 units · S$229 | 491–800 units · S$219 | 801–1,109 units · S$209 | 1,109 |
 
-Store explicit Tier 2/Tier 3 starting quantities per batch: **424/713**, **449/725**, **462/783**, **491/801** respectively. The current public batch page instead derives tier starts from 25%/70% of target capacity; its separate milestone markers also use different boundary rounding. Replace those assumptions with the approved per-batch values, and ensure price tables, current price, next-unlock text, progress markers and admin/final-pricing workflow agree. Test each boundary immediately below, at and above the threshold, including a multi-unit order crossing it. Starting-price display before any verified order should remain Tier 1; the maximum-capacity endpoints do not define the minimum-to-proceed counts specified below, or an automatic batch-success/cancellation rule.
+Store explicit Tier 2/Tier 3 starting quantities per batch: **424/713**, **449/725**, **462/783**, **491/801** respectively. The earlier public batch page derived tier starts from 25%/70% of target capacity, with inconsistent milestone rounding. The replacement explicit-tier implementation is complete and Marcus reported the preceding rollout completed; verify actual installed versions/configuration and consistency across price tables, current price, next-unlock text, progress markers and admin/final-pricing workflow. Test each boundary immediately below, at and above the threshold, including a multi-unit order crossing it. Starting-price display before any verified order should remain Tier 1; the maximum-capacity endpoints do not define the minimum-to-proceed counts specified below, or an automatic batch-success/cancellation rule.
 
 ### Approved deposits and hard limits — 16 November
 
@@ -94,3 +94,7 @@ Only the four optimized WebP images are served publicly. Original presentations 
 ## Updating the shortlist
 
 Use **Admin → Campaign pages → Edit content** to change names, prices, specifications and image paths, then save and preview. See `campaign-owner-manual.md` for the full workflow. Existing saved campaigns retain their saved content; this update changes the instant preview and the template for newly created test campaigns. Prepare a separate live campaign with approved prices and content when ready.
+
+## Local preview alignment — 17 November
+
+The four-product visual preview and future test-campaign template now use the approved Tier 1 prices above and Studio-Air naming. Preview selection/submission remains local-only and creates no saved registration, coupon or email. Offer terms are visible when the preview is explicitly configured to show the offer; this does not enable real issuance. Existing saved live campaigns must be checked/edited separately in Admin. Specifications/images remain subject to the evidence/model-mapping checks above; price alignment does not approve those claims.

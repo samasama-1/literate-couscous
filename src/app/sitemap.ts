@@ -11,6 +11,7 @@ const publicRoutes = [
   "/appointments",
   "/lookup",
   "/terms",
+  "/campaign-offer-terms",
   "/privacy",
   "/refunds-and-replacements",
   "/collection-delivery",

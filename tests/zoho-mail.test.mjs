@@ -119,7 +119,7 @@ test('uncertain Zoho sends and acceptance-save failures require review and canno
   await h.run();assert.equal(h.stats().sends,1);assert.ok(!JSON.stringify(h.current()).includes('PRIVATE'));
  }
  const crashed=deliveryHarness({job:{status:'sending',provider:'zoho',attempted_at:new Date(now-11*60000).toISOString(),metadata:{_mail_outcome:'preparing'}}});
- assert.equal(await crashed.run(),'failed');assert.equal(crashed.stats().sends,0);
+ assert.equal(await crashed.run(),'sent');assert.equal(crashed.stats().sends,1);
 });
 test('pre-send OAuth failures can retry safely; losing the durable marker prevents any send',async()=>{
  const h=deliveryHarness({prepareFails:true});assert.equal(await h.run(),'failed');assert.equal(h.stats().sends,0);assert.equal(h.current().metadata._mail_outcome,'not_sent');
@@ -153,7 +153,7 @@ test('campaign adapter keeps sending off until configured and persists Zoho prov
    assert.ok(['email_deliveries','funnel_events'].includes(table));return chain;}};
   const adapterModule={exports:{}};
   const imports={
-   'server-only':{},'@/lib/discounts/codes':{revealDiscountCode:()=>{throw Error('Not used for non-discount mail');}},'@/lib/orders/db':{orderDb:()=>db},'@/lib/supabaseAdmin':{supabaseAdmin:db},'./utils':{formatMoney:n=>'S$'+(n/100).toFixed(2)},'./security':{unsubscribeToken:()=> 'SIGNED_TOKEN'},'./types':{purchaseIntentLabels:{yes:'Yes, I’m interested',no:'No, I’m just voting'}},
+   'server-only':{},'@/lib/discounts/codes':{revealDiscountCode:()=>{throw Error('Not used for non-discount mail');}},'@/lib/orders/db':{orderDb:()=>db},'@/lib/supabaseAdmin':{supabaseAdmin:db},'./messages':load(path.resolve(root,'../campaigns/messages.ts')),'./utils':{formatMoney:n=>'S$'+(n/100).toFixed(2)},'./security':{unsubscribeToken:()=> 'SIGNED_TOKEN'},'./types':{purchaseIntentLabels:{yes:'Yes, I’m interested',no:'No, I’m just voting'}},
    '@/lib/mail/config':{mailSendingConfig:()=>config},'@/lib/mail/zoho-transport':{prepareZohoMail:async()=>{prepared++;return async m=>{sends++;lastMessage=m;return 'MSG123';};}},'@/lib/mail/delivery':{deliverOnce},
   };
   const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
@@ -163,7 +163,7 @@ test('campaign adapter keeps sending off until configured and persists Zoho prov
   process.env.CAMPAIGN_EMAIL_PROVIDER='zoho';assert.equal(await run(),'queued');assert.equal(prepared,0);
   for(const k of vars.filter(k=>k.startsWith('ZOHO_MAIL_')))process.env[k]=k.endsWith('ACCOUNT_ID')?'123456':'FAKE_TEST_VALUE';
   assert.equal(await run(),'sent');assert.equal(current.provider,'zoho');assert.equal(sends,1);assert.equal(current.metadata.product_name,'Dryer <test>');
-  assert.equal(current.metadata._mail_outcome,'accepted');assert.ok(lastMessage.html.includes('Dryer &lt;test&gt;'));assert.ok(lastMessage.html.includes('/unsubscribe?token=SIGNED_TOKEN'));assert.ok(lastMessage.text.includes('not an order or payment'));
+  assert.equal(current.metadata._mail_outcome,'accepted');assert.ok(lastMessage.html.includes('Dryer &lt;test&gt;'));assert.ok(lastMessage.html.includes('/unsubscribe?token=SIGNED_TOKEN'));assert.ok(lastMessage.text.includes('haven’t placed an order'));
   assert.equal(events[0].event_type,'confirmation_email_sent');assert.equal(await run(),'sent');assert.equal(sends,1);
  } finally {for(const k of vars){if(saved[k]===undefined)delete process.env[k];else process.env[k]=saved[k];}}
 });

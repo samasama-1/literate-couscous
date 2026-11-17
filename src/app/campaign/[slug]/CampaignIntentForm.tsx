@@ -170,14 +170,14 @@ export default function CampaignIntentForm({discountOffer=false, campaign, produ
   if (state.status === "success") {
     return (
       <section className="campaign-shell campaign-success" aria-live="polite">
-        <p className="section-label">{state.alreadyRegistered ? "Updated" : "Recorded"}</p>
-        <h2>Got it - you picked {state.productName}.</h2>
+        <p className="section-label">Request received</p>
+        <h2>We received your pick: {state.productName}.</h2>
         <p>
-          {campaign.confirmation_text || "We'll let you know how the vote develops. If this product moves forward, you'll get first access to the Founding Buyer offer."}
+          {campaign.confirmation_text || "Thanks for helping us choose what to bring in next. There’s nothing to pay, and you haven’t placed an order."}
         </p>
-        {state.emailStatus === "test" ? <p className="campaign-note">{preview ? "Preview complete. Nothing was saved and no email was sent." : "This is a test registration. No confirmation email was sent."}</p> : state.emailStatus !== "sent" && <p className="campaign-note">Your pick is saved. Your confirmation email has not been sent yet.</p>}
+        {state.emailStatus === "test" ? <p className="campaign-note">{preview ? "Preview complete. Nothing was saved and no email was sent." : "This is a test registration. No confirmation email was sent."}</p> : state.emailStatus !== "sent" && <p className="campaign-note">Your request was received. Check your latest acknowledgement email. A new email may still be queued.</p>}
         {discountOffer&&!preview&&<p>Eligible new registrations receive their personal reward code in the confirmation email. Check your inbox and spam folder; repeat registrations do not create a new code.</p>}
-        {!preview && <p>Product and launch updates are sent only if you opted in.</p>}
+        {!preview && <p>Check your inbox for your acknowledgement and any eligible personal discount code. No further confirmation is needed. Repeated submissions within ten minutes do not create another email. Marketing updates are optional and follow your existing preferences. Contact hello@samasama.sg to change an existing registration.</p>}
         <Link className="btn btn-secondary" href="/">
           Back to SamaSama
         </Link>
@@ -196,7 +196,7 @@ export default function CampaignIntentForm({discountOffer=false, campaign, produ
             <article key={product.id} className={`campaign-product ${selected ? "selected" : ""}`}>
               <div className="campaign-product-media">
                 {product.image_url ? (
-                  <Image src={product.image_url} alt={product.public_name} fill sizes="(min-width: 840px) 50vw, 100vw" unoptimized={!product.image_url.startsWith("/")} />
+                  <Image src={product.image_url} alt={product.public_name} fill sizes="(min-width: 840px) 50vw, 100vw" unoptimized={preview || !product.image_url.startsWith("/")} />
                 ) : (
                   <div className="campaign-product-placeholder" aria-hidden="true">
                     {product.public_name}
@@ -237,7 +237,7 @@ export default function CampaignIntentForm({discountOffer=false, campaign, produ
         <section ref={intentRef} className="campaign-shell campaign-intent">
           <p className="section-label">Product interest</p>
           <h2>Register your interest in {selectedProduct.public_name}</h2>
-          {discountOffer&&!preview&&<p className="campaign-note">New interested registrants receive a personal first-order code by email: S$10 off each unit, up to 10 units, on any product priced at S$50 or more per unit before discount. Valid for six calendar months from issue. The deposit is unchanged; the discount reduces the final balance.</p>}
+          {discountOffer&&<p className="campaign-note">New eligible registrations receive a personal first-order code by email: S$10 off each eligible unit in your first order, up to 10 units, on any SamaSama product priced at S$50 or more per unit before discount. Valid for six calendar months from issue. Your deposit stays unchanged; the discount reduces your final balance. No further confirmation is needed. <Link href="/campaign-offer-terms">Read the offer terms</Link>.</p>}
           <p>Submitting your pick tells us you’re interested in this product and helps us decide what to bring in next. No purchase or payment is required.</p>
 
           <div className="campaign-contact-grid">

@@ -1,10 +1,35 @@
 # SamaSama public-launch checklist
 
-Updated after the named-collector replacement · Asia/Singapore · working launch register
+Updated 17 November 2026 · Asia/Singapore · working launch register
 
 **Launch remains on hold.** This checklist records local work, owner decisions and verification still needed. It does not authorize deployment, remote SQL, customer emails, production settings or deletion. Unchecked means outstanding **or not yet verified**; it does not mean every item is absent from production. Older setup guides describe earlier versions and must not override the current security gates.
 
 Owners: **Build** = implementation/testing; **Marcus** = content, commercial/provider decisions and approval; **Admins** = day-to-day operational checks; **Joint** = controlled acceptance and release.
+
+## Current position and next actions — 16 November
+
+Commit/SQL preparation — 17 November: the [release handoff](campaign-registration-release-2026-11-17.md) now contains the exact preflight → new campaign migration → postcheck sequence, settings/deployment order and stop/recovery procedure. 128 local tests, TypeScript, lint, production webpack build and diff checks passed. Preparation/commit approval does not authorize a push, remote SQL or deployment; public opening and real inbox/CRM acceptance remain pending.
+
+Campaign-page review — 17 November: the no-write `/campaign-preview` now shows approved starting prices (Everyday Air S$109; Studio-Air S$119; Double Stack S$229; Single Stack S$219), the offer summary/terms link and one-step interest CTA. This updates the local demo and future test-campaign template only; saved live campaigns are not rewritten. Browser preview submission with marketing unchecked returned success without saving/sending; lint, TypeScript and diff checks passed. Final supplier/model/photo/specification approval, saved live-campaign configuration, compatible SQL/settings, actual inbox/CRM/retry acceptance and opening approval remain outstanding. Earlier 127-test/build results apply to the preceding email/terms revision, not a fresh full-suite run for these display changes.
+
+17 November email/content update: Marcus approved the clearer discount wording and the ten-minute cooldown. A formatted E02 email, decorative illustration and dedicated `/campaign-offer-terms` page are prepared locally and linked. Final visual/content acceptance and controlled inbox checks are outstanding. Review actual campaign page/product/success text after these are accepted, as requested; no deployment or test send has been authorized.
+
+- [x] Four-product pricing, exact tiers, deposits, verified-unit minimums and hard limits agreed; capacity/pricing implementation prepared and locally validated.
+- [x] Marcus reports completing the preceding SQL/Vercel rollout. This records his completion report, **not independent verification of production SQL, flags or actual batch configuration**. Do not repeat those migrations merely because older sections describe their preparation.
+- [x] Campaign flow simplified locally per Marcus’s 17 November instruction: register once → acknowledgement/eligible code email. No reconfirmation page or additional marketing confirmation step. Earlier owner-review drafts and preview states are superseded. Revised local verification: 127 tests and production webpack build passed; the previous 130-test result covered the superseded flow.
+- [x] Marcus supplied E02 wording and requested it be used with no reconfirmation. Dynamic product, price and original expiry replace sample values; the missing-name greeting falls back to “Hi,”. An eligible code requires no marketing consent.
+- [ ] Separately approve and coordinate the new campaign migration/application/settings cutover after shared-mailbox runtime compatibility, provider capacity and log/tracking checks. Both new campaign flags remain default-off in code; no activation is implied by this document.
+
+| Priority | Practical next action | Owner |
+|---|---|---|
+| 1 | Check the implemented customer-supplied acknowledgement, dynamic fields and actual campaign-specific success text; finalize published offer terms. No owner-confirmation action remains. | Marcus |
+| 2 | Prepare the compatible campaign cutover; verify current SQL/runtime/provider settings, private-link redaction, historical queues/consent and automatic worker outcomes using controlled records/inboxes after approval. | Build + Admins; Marcus authorizes changes/sends |
+| 3 | Finalize purchase, deposit, delivery-balance and collection-ready emails; supply real collection hours/location, delivery instructions and cancellation/warranty rules. Validate product evidence, closing dates and actual launch-batch configuration. | Marcus + Build |
+| 4 | Complete campaign/coupon and paid-order acceptance: real bank verification, final pricing, excess-payment/refund handling, owner/delegate collection, delivery and competing staff handovers. | Joint |
+| 5 | Verify CEO individual access, responsible admin alerts, queue recovery, scheduled workers, latest successful Sheet backup, cleanup/retention and recovery procedures. Confirm launch hosting/sending capacity. | Admins + Build; Marcus approves provider changes |
+| 6 | Reconcile public copy/policies, remove demo content, complete mobile/privacy checks and approve public opening explicitly. Keep Coming Soon until these gates pass. | Joint |
+
+Storage charging remains **off** until usable-notice/bounce, reminder and hold/resumption controls are ready. It may be deferred only with accurate public wording and a safe admin process. Weekly progress emails and exact overdue-reminder content/timings remain unapproved drafts; weekly refers to progress updates, not overdue collection notices. A rich email editor, advanced analytics and extra CRM product fields can follow launch if not promised to customers.
 
 ## Dashboard implementation — 3 November 2026
 
@@ -16,13 +41,13 @@ See [payment-rollout-hardening-2026-10-28.md](payment-rollout-hardening-2026-10-
 
 - [ ] Apply/rehearse the safety hold after the collection migrations, check fixed cutoff/permissions, then set its installation flag in the approved environment. Keep fee-policy activation off.
 - [ ] Approve usable-notice/bounce handling, hold resolution, resumption accounting and pre-deadline reminder wording/timing before implementing a future fee-charging release. No reminder schedule has been added.
-- [ ] Re-stage the revised source/SQL/tests before committing; the earlier staged snapshot predates these fixes.
+- [ ] Inspect the current complete diff before any new commit; historical staging notes are not evidence of the current deployed revision.
 
 ## Manual payment flow update — 27 October 2026
 
 Local implementation: [manual-balance-rollout.md](manual-balance-rollout.md). Self-collection pays the remaining balance at the desk, verified against actual credited bank funds before ID-checked handover. Only delivery orders receive balance requests, explicitly previewed/queued by an admin in Delivery balance emails. No new automatic sending schedule or reminder is added. Existing order/deposit/readiness/security notifications remain separate.
 
-- [ ] Review/approve the manual-balance migration and coordinated staging rollout; do not enable its flag against an old schema.
+- [ ] Review/approve the manual-balance migration and coordinated rollout; do not enable its flag against an old schema.
 - [ ] Complete collection payment → authorization/storage → single handover acceptance, and delivery preview → manual queue → verified payment → delivery acceptance.
 - [ ] Finalize delivery-only balance email wording and the collection-ready pay-at-collection notice; test an approved inbox and existing prepaid orders.
 
@@ -45,11 +70,15 @@ Working sequence and copy-to-backend acceptance matrix: [launch copy and workflo
 
 SQL/Vercel handoff and practical next steps: [verified-capacity-rollout-2026-11-16.md](verified-capacity-rollout-2026-11-16.md). The detail-page payment CTA now respects full capacity and no longer promises reservation on payment; saved-order and acknowledgement copy include the approved original-payment-method refund assurance. Refund/contact handling remains admin-owned.
 
-Marcus approved pending requests without reservations/expiry: capacity and tier participation count only after admin deposit verification. [Local implementation and installation](verified-batch-capacity.md): private per-batch counter, atomic hard-cap guard, public aggregate view, pending-aware batch editing and accurate checkout/acknowledgement copy. Migration and application remain local; no SQL has been applied remotely. Explicit product tier thresholds/minimum-to-proceed configuration and broader launch gates remain open. Admins must reconcile/refund actual received funds when availability is exhausted, rather than forcing an over-cap confirmation. Local verification: **115 tests passed**, plus TypeScript, lint and production build; independent PostgreSQL-session contention and actual production installation remain unverified.
+Marcus approved pending requests without reservations/expiry: capacity and tier participation count only after admin deposit verification. [Implementation and installation reference](verified-batch-capacity.md): private per-batch counter, atomic hard-cap guard, public aggregate view, pending-aware batch editing and accurate checkout/acknowledgement copy. Marcus subsequently reported completing the rollout. Actual database/application versions and launch-batch settings still need acceptance evidence; the earlier local-only status is superseded by that report. Admins must reconcile/refund actual received funds when availability is exhausted, rather than forcing an over-cap confirmation. Local verification at that step: **115 tests passed**, plus TypeScript, lint and production build; independent PostgreSQL-session contention remains unverified.
 
-## Exact product tiers and proceed approval — local implementation
+## Exact product tiers and proceed approval — rollout reported complete
 
-[Implementation and SQL/Vercel steps](batch-pricing-rollout-2026-11-16.md): exact per-batch tier starts and a separate minimum replace percentage-derived presentation. Approved four-product presets are available on new batches. Proceed approval checks current verified units, records a private admin audit and gates new/changed final quotes for configured batches. It does not automatically close batches, lock prices, place supplier orders or send mail. Unconfigured batches block new requests; existing order terms/workflows remain intact. Thresholds/minimum lock once orders exist. Apply the new migration after verified capacity, deploy and explicitly configure empty/new launch batches; never infer or silently rewrite ordered historical batches.
+[Implementation and SQL/Vercel reference](batch-pricing-rollout-2026-11-16.md): exact per-batch tier starts and a separate minimum replace percentage-derived presentation. Approved four-product presets are available on new batches. Proceed approval checks current verified units, records a private admin audit and gates new/changed final quotes for configured batches. It does not automatically close batches, lock prices, place supplier orders or send mail. Unconfigured batches block new requests; existing order terms/workflows remain intact. Thresholds/minimum lock once orders exist. Marcus reported the preceding rollout completed; verify installed versions and the actual empty/new launch-batch settings rather than assuming presets configure existing records. Never infer or silently rewrite ordered historical batches.
+
+## Campaign registration safety — single-step revision, 17 November
+
+[Current flow and cutover steps](campaign-registration-review-2026-11-16.md). Marcus superseded the proposed owner-review flow: one registration sends the acknowledgement and eligible personal coupon directly. New contacts retain optional phone/Telegram and the initial unchecked marketing choice as single opt-in evidence, not verified inbox ownership. Existing contacts/picks/unsubscribe remain unchanged by public repeats. Bounded known-unsent retries, shared sender pacing, redacted health reporting and scheduled rate-limit cleanup remain prepared locally behind default-off flags. No owner-request table, confirmation route or private review token is created. Provider/runtime compatibility, offer terms, historical queues/consent and controlled send/browser acceptance remain release checks. No remote SQL, deployment, provider setting or customer send has been performed by this revision.
 
 ## Contact and refund copy — 16 November 2026
 
@@ -94,8 +123,8 @@ Order queue, five immediate order-email events, Zoho Mail authorization, dedicat
 
 - [ ] Verify one new order triggers exactly one order acknowledgement **without terminal commands**, then each verified payment/readiness transition produces the correct email and CRM update.
 - [ ] Verify one campaign lead receives exactly one acknowledgement, the admin delivery status is accurate, and CRM reflects the intended product/interest/consent. Confirm no-consent registration does not subscribe someone to marketing.
-- [ ] Implement email-ownership verification before allowing a public submission to alter an existing person's contact/consent or activate marketing. An acknowledgement email is not proof of ownership. Keep order ownership verification separate from payment verification.
-- [ ] Add a bounded, lease-safe automatic retry consumer for known-unsent queued interest confirmations. Current runtime shared pacing can defer them; a general scheduled drain is still absent.
+- [ ] Verify single-step registration: the initial optional marketing checkbox is recorded only for newly created contacts; repeats cannot overwrite existing contact/pick or reverse unsubscribe. Support handles changes. Do not label these records as verified inbox ownership. Order/payment/collector verification remains separate and unchanged.
+- [ ] Review and activate the locally prepared bounded consumer for new-flow known-unsent interest confirmations, sharing V2 pacing and the existing email schedule. Historical queued/uncertain messages need separate admin review; do not bulk-reset their state.
 - [ ] Complete producers/templates for weekly updates, owner OTPs, authorization notices and reminders. Runtime priority classification alone does not implement these events; unsupported events currently fail safely.
 - [ ] Use immutable event IDs/deduplication and current-state eligibility before sending. Stop obsolete jobs after payment, refund, collection, cancellation, rescheduling or replaced links as appropriate. Never blindly replay an uncertain provider POST.
 - [ ] Verify existing scheduled worker ticks and inspect HTTP/outbox outcomes, not only Cron's enqueue-success status. Reconcile old failed/review jobs before enabling any revised schedule.
@@ -105,13 +134,13 @@ Order queue, five immediate order-email events, Zoho Mail authorization, dedicat
 
 Done when: approved events complete automatically within the agreed timing, failures are visible and recoverable, and retries do not duplicate messages or weaken identity/consent checks.
 
-Named-collector follow-up: [replacement rollout and local test scope](named-collector-rollout.md). The previous pickup-code model has been removed locally. Deployment and real staging acceptance remain pending.
+Named-collector follow-up: [replacement rollout and local test scope](named-collector-rollout.md). The previous pickup-code model has been removed locally. Deployment and controlled acceptance remain pending.
 
 ## 3. Collection, storage and payment security — Build; Admins procedures
 
 Mandatory before enabling the affected new features; see [the security review](collection-hardening-review-2026-10-26.md). Keep incomplete capabilities explicitly disabled while preserving existing payment/handover protection.
 
-- [ ] Validate the replacement name + original-photo-ID flow in staging. Pickup-code generation, storage and verification are removed; check one-use 24-hour owner links, rate limits, revocation and ID-required release instead.
+- [ ] Validate the replacement name + original-photo-ID flow using controlled records. Pickup-code generation, storage and verification are removed; check one-use 24-hour owner links, rate limits, revocation and ID-required release instead.
 - [ ] Validate the locally implemented one-use, 24-hour email-delivered owner form and fresh-link reissue for collector changes. Preserve safe revocation/recovery even if issuance is disabled.
 - [ ] Invalidate authorizations on owner/email, fulfilment-method, readiness, refund/cancellation and other relevant state changes; test replace/revoke versus redemption.
 - [ ] Ensure old/alternative fulfilment RPC paths cannot bypass storage, authorization or payment checks. Verify the complete SECURITY DEFINER chain, ownership, safe search paths, schema privileges and service-only access.
@@ -146,7 +175,7 @@ Done when: retention is bounded and approved, the last successful emergency copy
 - [ ] Confirm secure admin authentication/session controls and permissions for financial adjustments and releases. Avoid shared credentials; consider stronger authentication for sensitive actions.
 - [ ] Enable reviewed Operations health only after its SQL/runtime prerequisites and tests pass. Report backlog, oldest due job, failures/review, latency and missing worker heartbeats; include campaign-confirmation work too.
 - [ ] Configure protected alerts and assign an on-duty admin/acknowledgement procedure. “All admins” must not mean an alert goes unowned.
-- [ ] Staging-test bounded pagination/search, queue claims, shared provider limits, cleanup and contention at 100/500/1,000/2,000 synthetic orders. Local timing samples are not a production load guarantee.
+- [ ] Test bounded pagination/search, queue claims, shared provider limits, cleanup and contention at 100/500/1,000/2,000 synthetic orders. Local timing samples are not a production load guarantee.
 - [ ] Confirm Vercel/Supabase launch upgrades, spend alerts, database/connection/egress headroom, provider budgets and the proposed transactional-mail channel. No paid resource is created by this checklist.
 - [ ] Plan compatible worker cutover: pause old schedules, drain/reconcile in-flight work, migrate/deploy the compatible revision, validate, then activate reviewed limits/schedules. V1 direct send markers are incompatible with the V2 guards; simply toggling the app flag is not a complete rollback.
 
@@ -157,14 +186,14 @@ Done when: authorized staff can operate safely, failures reach a responsible per
 - [ ] Finalize real product/batch content, prices, stock/capacity, images and campaign copy; remove demo material. Verify generated batch links work for open batches and closed batches reject new submissions.
 - [ ] Verify actual PayNow UEN/payee/QR and support contact in the deployed environment without exposing credentials. Confirm delivery wording says subject to confirmation and additional agreed charges.
 - [ ] Review published privacy, collection/delivery, payment/refund and commercial terms against the implemented behavior. Preserve earlier acceptance versions; do not backfill acceptance for old orders.
-- [ ] Test campaign registration → ownership verification → acknowledgement → CRM/admin entry, with no marketing consent, duplicate submissions, unsubscribe and provider failure.
-- [ ] Test order → acknowledgement → verified deposit → balance request/private link → verified balance → readiness notice → owner/delegate collection or delivery → CRM update and backup.
+- [ ] Test campaign registration → acknowledgement/original eligible coupon → current CRM/admin state, with no marketing consent, duplicate submissions, unsubscribe and provider failure. No reconfirmation is required; marketing opt-in must not gate an eligible coupon.
+- [ ] Test order → acknowledgement → verified deposit → final quote/readiness → either collection desk balance verification and owner/delegate handover, or admin-queued delivery balance email/private link → verified funds → delivery. Verify CRM update and backup; self-collection must not receive the delivery-only balance request.
 - [ ] Test zero balance, unpaid/refunded/legacy orders, expired/replaced links, changed collector/date, blocked/late notice, waived/storage-paid orders and two staff attempting the same handover. Partial collection remains unsupported unless separately implemented.
 - [ ] Check mobile/desktop layout, keyboard/error states, search, images, support/reply links and private-page caching. Verify retrying a failed form does not duplicate the order or notification.
 - [ ] Review page titles/social previews, canonical URLs, indexing/sitemap behavior and analytics/consent before traffic is directed to the site. Tracking must not collect private management/payment URLs.
 - [ ] Reconcile old and new setup documents so stale “manual balance email” or “reminders enabled” instructions cannot mislead staff.
 
-Done when: a controlled staging acceptance record shows the intended customer/admin journey and exceptions, with approved inbox tests and no real customer data used in test fixtures.
+Done when: a controlled acceptance record shows the intended customer/admin journey and exceptions, with approved inbox tests and no real customer data used in test fixtures.
 
 ## 7. Final release — explicit approval required
 

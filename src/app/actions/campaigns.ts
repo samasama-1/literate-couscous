@@ -20,7 +20,9 @@ export async function submitCampaignIntent(value: unknown) {
     await limitRequest('registration-email',6,600,input.email);
     const discounts=process.env.CAMPAIGN_DISCOUNTS_INSTALLED==='true';
     const candidate=discounts?prepareDiscountCode(process.env.ORDER_EMAIL_LINK_KEY||''):null;
-    const {data,error} = discounts?await orderDb().rpc('register_campaign_intent_discount',{p:{...input,session_id:session},p_coupon:candidate}):await supabaseAdmin.rpc('register_campaign_intent',{p:{...input,session_id:session}});
+    const safeRegistration=process.env.CAMPAIGN_REGISTRATION_V2==='true';
+    if(safeRegistration&&(process.env.ORDER_RUNTIME_V2!=='true'||process.env.CAMPAIGN_EMAIL_PROVIDER!=='zoho'))return {error:'Registration is temporarily unavailable. Please contact hello@samasama.sg.'};
+    const {data,error} = safeRegistration?await orderDb().rpc('register_campaign_intent_v2',{p:{...input,session_id:session},p_coupon:candidate}):discounts?await orderDb().rpc('register_campaign_intent_discount',{p:{...input,session_id:session},p_coupon:candidate}):await supabaseAdmin.rpc('register_campaign_intent',{p:{...input,session_id:session}});
     if (error) {
       const messages: Record<string,string> = {
         PRICE_CHANGED:'The estimated price changed. Refresh the page and confirm your pick at the new price.',
@@ -47,6 +49,7 @@ export async function submitCampaignIntent(value: unknown) {
     });
     revalidatePath('/admin/campaigns');
     revalidatePath(`/admin/campaigns/leads/${result.lead_id}`);
-    return {success:true as const,productName:result.product_name,purchaseIntent:input.purchase_intent,alreadyRegistered:result.already_registered,emailStatus};
-  } catch(e) { return {error:e instanceof Error ? e.message : 'Registration is temporarily unavailable.'}; }
+    // Keep public acknowledgements uniform: do not reveal existing-contact or delivery state.
+    return {success:true as const,productName:result.product_name,purchaseIntent:input.purchase_intent,alreadyRegistered:false,emailStatus:!result.is_test?'queued':emailStatus};
+  } catch(e) { return {error:e instanceof Error && e.message.startsWith('Too many requests.') ? e.message : 'Registration is temporarily unavailable. Please try again shortly.'}; }
 }

@@ -4,14 +4,14 @@ export const demoCampaign: Campaign = {
   id:'00000000-0000-4000-8000-000000000001',name:'The first home shortlist · test campaign',slug:'home-shortlist-test',
   description:'Two hairdryers. Two air fryers. Help us choose our first drop.',
   headline:'Four shortlisted products. Which one belongs in your home?',
-  subheadline:'Meet two hairdryers and two air fryers on our shortlist. Pick your favourite and tell us if you’re interested. Your vote helps us choose what to bring in next. No purchase or payment is required.',
-  cta_text:'Register my pick',confirmation_text:'Your test pick is recorded. No purchase, payment or commitment is involved.',
+  subheadline:'Meet two hairdryers and two air fryers on our shortlist. Choose the product you’re interested in and help shape what we bring in next. There’s nothing to pay, and registering does not place an order.',
+  cta_text:'Register my interest',confirmation_text:'Thanks for helping us choose what to bring in next. There’s nothing to pay, and you haven’t placed an order.',
   status:'active',starts_at:null,ends_at:null,reservation_enabled:false,is_test:true,created_at:timestamp,updated_at:timestamp,
 };
 // Neutral public names. Supplier/model mapping and source evidence stay in docs/campaign-product-sources.md.
 const options = [
   {
-    name:'Everyday Air',label:'Hairdryer A',price:9900,
+    name:'Everyday Air',label:'Hairdryer A',price:10900,
     benefit:'A simple handheld design',
     description:'A straight-barrel hairdryer with handle-mounted controls and an air-intake grille at the base.',
     why:'A clean, straightforward design to compare with the folding option.',
@@ -19,7 +19,7 @@ const options = [
     tradeoff:'Power, motor speed and weight are still to be confirmed.',image:'hairdryer-a.webp',
   },
   {
-    name:'Studio Air',label:'Hairdryer B',price:10900,
+    name:'Studio-Air',label:'Hairdryer B',price:11900,
     benefit:'Folding away between uses',
     description:'A folding hairdryer with a brushless motor, digital display and separate airflow and heat controls. The image shows two views of the same model.',
     why:'A rotating folding handle and adjustable settings offer a different everyday setup.',
@@ -27,7 +27,7 @@ const options = [
     tradeoff:'Final colour and included attachments are still to be confirmed.',image:'hairdryer-b.webp',
   },
   {
-    name:'Double Stack Steamer/Airfryer',label:'Air fryer A',price:21900,
+    name:'Double Stack Steamer/Airfryer',label:'Air fryer A',price:22900,
     benefit:'Steam cooking and air frying in separate compartments',
     description:'A stacked, two-drawer appliance combining an upper steam-cooking zone with a lower air-frying zone.',
     why:'Separate cooking zones arranged vertically, with a viewing window in each drawer.',
@@ -35,7 +35,7 @@ const options = [
     tradeoff:'Check the 446 mm height against your available counter space.',image:'air-fryer-a.webp',
   },
   {
-    name:'Single Stack Steamer/Airfryer',label:'Air fryer B',price:20900,
+    name:'Single Stack Steamer/Airfryer',label:'Air fryer B',price:21900,
     benefit:'Checking food through the drawer window',
     description:'A black air fryer with a front viewing window, a pull-out drawer and a digital control panel.',
     why:'The viewing window and front-facing controls make this a useful design to compare with the stacked option.',

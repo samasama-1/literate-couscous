@@ -1,6 +1,6 @@
 # Customer email draft register
 
-26 October 2026 · planning drafts only · no live templates, queue jobs or schedules created
+Updated 17 November 2026 · drafts only · no live templates, queue jobs or schedules created by this register
 
 Marcus will dictate exact emails and content later. The entries below are **draft briefs with subject starters**, not final customer copy. Their existence does not mean the sender/event is implemented. Do not paste them into an enabled workflow or send placeholders to customers.
 
@@ -45,7 +45,7 @@ Launch tracking: [website-launch-checklist.md](website-launch-checklist.md).
 - [ ] Test duplicates, stale state, missing data, bounce, deferred capacity, uncertain sends, expiry and rescheduling.
 - [ ] Record approved template version and activation approval. Keep unapproved drafts unsendable.
 
-No final email bodies were invented in this register. Existing production templates were not edited or disabled. Exact collection-reminder offsets remain deferred for Marcus's later instructions.
+The E02 body below is adapted from Marcus's supplied draft; the other entries remain briefs. Existing production templates were not edited or disabled. Exact collection-reminder offsets remain deferred for Marcus's later instructions.
 
 Named-collector update: the collection-ready email now includes the owner-only authorisation form link. Collector provides full name only; staff verify original photo ID and order code. No collector phone or pickup code is collected. See [replacement guide](named-collector-rollout.md).
 
@@ -56,3 +56,67 @@ The current approved flow supersedes earlier general balance-request briefs: sel
 ## Campaign reward confirmation update — 10 November 2026
 
 The prepared campaign acknowledgement includes the personal reward only for newly eligible registrations: S$10 per unit (up to ten), any product at least S$50 per unit before discount, first paid order, six calendar months from issue. The deposit is unchanged. Codes are private and email-bound, not returned on the public success page. Review final copy/terms and an approved owned-inbox send before activation. No separate reward email or automatic reminder schedule was added. See [campaign-discounts-setup.md](campaign-discounts-setup.md).
+
+
+Campaign update — 17 November: Marcus explicitly chose a **single-step campaign registration**. No registration reconfirmation page, owner-review link, second marketing checkbox or pending-owner data is required. Earlier confirmation-page drafts and preview states are superseded. New-contact marketing follows the optional form checkbox; existing contact details, picks and unsubscribe preferences are preserved. Changes to an existing registration go through support.
+
+## E02 — customer-supplied copy, 17 November 2026
+
+**Status:** Marcus requested this copy be used in the implementation. Prepared locally; no test send, rollout or production activation is authorized by this wording decision. The sender uses a neutral subject and omits the reward section if no eligible code is available.
+
+**Subject:** Your pick is in—here’s your S$10 thank-you
+
+**Preview text:** Thanks for helping shape what SamaSama brings in next.
+
+Hi,
+
+**Thanks for helping us choose what to bring in next.**
+
+You’ve registered your interest in **{{product_name}}**, with an estimated launch price of **{{estimated_price_sgd}}**.
+
+Your input helps guide our sourcing decisions. Before we open a batch, we review suppliers, check product claims and samples, and work through the fulfilment details.
+
+**There’s nothing to pay, and you haven’t placed an order.**
+
+Before you commit, we’ll share the confirmed product details, batch pricing, estimated timeline and support terms.
+
+**A thank-you for being here early**
+
+Your personal first-order code:
+
+**{{personal_code}}**
+
+Get **S$10 off each eligible unit in your first order**, for up to **10 units**. Use it on any eligible SamaSama product.
+
+Use the same email address you registered with. Valid until **{{original_coupon_expiry_singapore}}**.
+
+Your deposit stays unchanged; the discount reduces your final balance.
+
+Eligible products must cost at least S$50 per unit before discount.
+
+**Terms and conditions apply** — /campaign-offer-terms
+
+**See how SamaSama works** — /how-it-works
+
+Questions about {{product_name}} or the process?
+
+Reply to this email—we’re happy to help.
+
+Thanks for being part of the journey,
+
+**The SamaSama team**
+
+*Marketing updates are optional and follow your chosen preferences.*
+
+**Manage marketing preferences** — existing signed unsubscribe link.
+
+### Dynamic fields and operational notes
+
+- Greeting falls back to “Hi,” because the form does not collect a first name. Product, price, code and original Singapore-time expiry come from saved data; never send literal placeholders.
+- The supplied 16 May 2027 date is an example for a 16 November 2026 issue; keep six-calendar-month expiry from the original issue, unchanged by retries.
+- Marcus approved replacing “in this campaign” with “each eligible unit in your first order”; the email explicitly permits any eligible SamaSama product. Agreed eligibility and financial rules are unchanged.
+- A dedicated /campaign-offer-terms page is prepared with the approved rules and linked from HTML/plain text. It links to the general order, refund and privacy pages; deployment/content acceptance remain separate.
+- The acknowledgement confirms receipt of interest, not verified email ownership or payment. Repeat submissions do not change an existing saved pick; support handles corrections. Admins must not treat a single opt-in as verified inbox ownership.
+- Keep the ten-minute repeat-email cooldown, bounded safe retries, shared sender budget and original coupon preservation. No new customer action or automatic schedule is introduced.
+
+Email appearance — 17 November: the actual HTML renderer now uses the site’s olive/linen palette, a decorative generated parcel illustration, selectable code/expiry text and email-compatible presentation tables. Plain text remains available; key information does not depend on the image. Preview and dedicated offer terms are prepared locally. Campaign-specific page/success-copy review follows these items, as requested.

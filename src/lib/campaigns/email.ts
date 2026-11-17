@@ -5,17 +5,17 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { formatMoney } from './utils';
 import { unsubscribeToken } from './security';
 import { purchaseIntentLabels, type PurchaseIntent } from './types';
+import {campaignAcknowledgement} from './messages';
 import type {Json} from '@/types/database';
 import {mailSendingConfig} from '@/lib/mail/config';
 import {prepareZohoMail} from '@/lib/mail/zoho-transport';
 import {deliverOnce, type DeliveryStore} from '@/lib/mail/delivery';
-function escapeHtml(value: string) { return value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!)); }
 function baseUrl() {
   const value = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || 'https://www.samasama.sg';
   return new URL(value.includes('://') ? value : `https://${value}`).origin;
 }
 // Durable outbox: registration and its immutable content snapshot are saved together.
-export async function deliverConfirmation(id: string): Promise<'sent'|'queued'|'failed'> {
+export async function deliverConfirmation(id: string, cachedZoho?:()=>ReturnType<typeof prepareZohoMail>): Promise<'sent'|'queued'|'failed'> {
   const {data:job,error} = await supabaseAdmin.from('email_deliveries').select('*').eq('id',id).single();
   if (error || !job || job.template_key !== 'intent_confirmation' || !job.contact_id) return 'failed';
   if (job.status === 'sent') return 'sent';
@@ -25,13 +25,14 @@ export async function deliverConfirmation(id: string): Promise<'sent'|'queued'|'
   if (provider === 'resend' && (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM)) return 'queued';
   if (provider === 'zoho' && (!process.env.ZOHO_MAIL_CLIENT_ID || !process.env.ZOHO_MAIL_CLIENT_SECRET
     || !process.env.ZOHO_MAIL_REFRESH_TOKEN || !process.env.ZOHO_MAIL_ACCOUNT_ID)) return 'queued';
-  let discountLines:string[]=[];
+  let couponOffer:{code:string;expiresAt:string}|undefined;
   if((job.metadata as Record<string,unknown>)?.campaign_coupon_id){
     const {data:coupon,error:couponError}=await orderDb().rpc('campaign_discount_mail',{p_delivery:id});
     if(couponError||!coupon)return 'queued';
     if(coupon.status==='issued'&&Date.parse(coupon.expires_at)>Date.now()){
-      try{discountLines=['',`Your first-order code: ${revealDiscountCode(coupon,process.env.ORDER_EMAIL_LINK_KEY||'')}`,`Save S$10 per unit on products priced at S$50 or more before discount. Up to 10 units in your first order. Valid until ${new Date(coupon.expires_at).toLocaleString('en-SG',{timeZone:'Asia/Singapore'})} (Singapore time). Use the email address you registered with. The deposit stays unchanged; the discount reduces the final balance.`];}catch{return 'queued';}
-    }else discountLines=['','Your campaign reward is reserved, used, expired or requires review. Contact hello@samasama.sg if you need help.'];
+      try{couponOffer={code:revealDiscountCode(coupon,process.env.ORDER_EMAIL_LINK_KEY||''),expiresAt:coupon.expires_at};}catch{return 'queued';}
+    }
+
   }
   // Every state update is compare-and-set. Metadata retains the original message fields;
   // only _mail_outcome changes. The existing provider column records the actual sender.
@@ -70,13 +71,10 @@ export async function deliverConfirmation(id: string): Promise<'sent'|'queued'|'
       if (!intent || !Number.isSafeInteger(snapshot.price_shown_cents) || /[\r\n]/.test(name)) throw new Error('Invalid email snapshot.');
       if (provider === 'zoho' && process.env.EMAIL_REPLY_TO && process.env.EMAIL_REPLY_TO.toLowerCase() !== (process.env.ZOHO_MAIL_FROM || 'hello@samasama.sg').toLowerCase()) throw new Error('Unsupported reply destination.');
       const url = `${baseUrl()}/unsubscribe?token=${unsubscribeToken(job.contact_id!)}`;
-      const lines = ['Hi,','', 'Thanks for helping us decide what SamaSama should bring in next.', '', `You picked: ${name}`, `Estimated launch price: ${price}`, `Your response: ${intent}`, '', "This records your pick, not an order or payment. We're collecting responses before deciding what moves forward.", '', 'If you opted in to updates, we will let you know about the next steps.', ...discountLines, '', '— SamaSama', 'Tested first. Bought together.', '', `Manage marketing preferences: ${url}`];
-      return {to:job.recipient_email,subject:`We recorded your pick: ${name}`,text:lines.join('\n'),
-        html:`<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:24px;line-height:1.6;overflow-wrap:anywhere">${lines.map(line=>`<p>${escapeHtml(line)}</p>`).join('')}</div>`,
-        replyTo:process.env.EMAIL_REPLY_TO || undefined};
+      return {to:job.recipient_email,...campaignAcknowledgement({name,price,coupon:couponOffer,origin:baseUrl(),unsubscribeUrl:url}),replyTo:process.env.EMAIL_REPLY_TO || 'hello@samasama.sg'};
     },
     prepare: async () => {
-      if (provider === 'zoho') return prepareZohoMail(mailSendingConfig());
+      if (provider === 'zoho') return cachedZoho?cachedZoho():prepareZohoMail(mailSendingConfig());
       const key = process.env.RESEND_API_KEY!;
       return async message => {
         const response = await fetch('https://api.resend.com/emails',{
