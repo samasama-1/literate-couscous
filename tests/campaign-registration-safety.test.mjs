@@ -31,6 +31,23 @@ async function fixture(){
   return{db,campaign,products,p,submit,contact};
  }catch(e){await db.close();throw e;}
 }
+test('missing runtime can be installed with current campaign/discount/collection schema, then campaign safety restored',async()=>{
+ const{db,submit,contact}=await fixture();try{
+  const runtime=await readFile(new URL('../database/sql/order_operations_runtime.sql',import.meta.url),'utf8');
+  assert.equal((await db.query("SELECT to_regclass('public.order_runtime_limits')v")).rows[0].v,null);
+  await db.exec(runtime);await db.exec(sql);
+  // Reapplication is safe and campaign definitions remain last in the sequence.
+  await db.exec(runtime);await db.exec(sql);
+  const pre=await db.exec(await readFile(new URL('../database/sql/campaign_registration_preflight.sql',import.meta.url),'utf8'));
+  const functions=pre.flatMap(r=>r.rows).filter(r=>r.signature);assert.equal(functions.length,8);
+  for(const f of functions){assert.equal(f.installed,true);assert.equal(f.owner,'postgres');assert.equal(f.anon_can_execute,false);assert.equal(f.authenticated_can_execute,false);assert.equal(f.service_can_execute,true);}
+  const budgets=(await db.query('SELECT kind,enabled FROM order_runtime_limits ORDER BY kind')).rows;
+  assert.deepEqual(budgets,[{kind:'crm',enabled:false},{kind:'email',enabled:false}]);
+  assert.equal((await db.query("SELECT * FROM claim_order_jobs_v2('email',10)")).rows.length,0);
+  const result=await submit({marketing_consent:false});assert.ok(result.result.delivery_id);assert.equal((await contact()).marketing_consent,false);
+  assert.ok((await db.query('SELECT metadata FROM email_deliveries WHERE id=$1',[result.result.delivery_id])).rows[0].metadata.campaign_coupon_id);
+ }finally{await db.close();}
+});
 test('release SQL checks are read-only and old owner schemas stop the migration',async()=>{
  const{db}=await fixture();try{
   const before=(await db.query('SELECT count(*)::int n FROM email_deliveries')).rows[0].n;
